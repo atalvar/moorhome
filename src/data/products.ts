@@ -1,4 +1,4 @@
-import { Product } from '@/contexts/CartContext';
+import { Product } from '@/contexts/ReservationContext';
 
 export const categories = [
   'Kõik',

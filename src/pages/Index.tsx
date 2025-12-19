@@ -2,10 +2,17 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Hammer, Heart, Recycle } from 'lucide-react';
 import { products } from '@/data/products';
+import { useReservation } from '@/contexts/ReservationContext';
 import ProductCard from '@/components/ProductCard';
 
 const Index = () => {
-  const featuredProducts = products.slice(0, 3);
+  const { reservedProductIds } = useReservation();
+  
+  // Get available featured products (not reserved)
+  const availableProducts = products.filter(
+    (product) => !reservedProductIds.includes(product.id)
+  );
+  const featuredProducts = availableProducts.slice(0, 3);
 
   return (
     <div className="min-h-screen">
@@ -106,37 +113,39 @@ const Index = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 md:py-24 bg-cream-dark">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
-            <div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
-                Valitud tooted
-              </h2>
-              <p className="text-muted-foreground mt-2">
-                Avasta meie parimad restaureeritud mööbliesemed
-              </p>
-            </div>
-            <Link to="/pood">
-              <Button variant="outline" className="gap-2">
-                Vaata kõiki
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product, index) => (
-              <div
-                key={product.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <ProductCard product={product} />
+      {featuredProducts.length > 0 && (
+        <section className="py-16 md:py-24 bg-cream-dark">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
+              <div>
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
+                  Valitud tooted
+                </h2>
+                <p className="text-muted-foreground mt-2">
+                  Avasta meie parimad restaureeritud mööbliesemed
+                </p>
               </div>
-            ))}
+              <Link to="/pood">
+                <Button variant="outline" className="gap-2">
+                  Vaata kõiki
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredProducts.map((product, index) => (
+                <div
+                  key={product.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-16 md:py-24 bg-primary text-primary-foreground">

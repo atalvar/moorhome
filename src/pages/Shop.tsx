@@ -2,14 +2,21 @@ import { useState } from 'react';
 import { products, categories } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
+import { useReservation } from '@/contexts/ReservationContext';
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('Kõik');
+  const { reservedProductIds } = useReservation();
+
+  // Filter out already reserved products
+  const availableProducts = products.filter(
+    (product) => !reservedProductIds.includes(product.id)
+  );
 
   const filteredProducts =
     selectedCategory === 'Kõik'
-      ? products
-      : products.filter((product) => product.category === selectedCategory);
+      ? availableProducts
+      : availableProducts.filter((product) => product.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-background">
@@ -20,7 +27,7 @@ const Shop = () => {
             Meie Pood
           </h1>
           <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
-            Sirvi meie hoolikalt restaureeritud mööblit. Iga ese on ainulaadne ja valmis uueks koduks.
+            Sirvi meie hoolikalt restaureeritud mööblit. Iga ese on ainulaadne — broneeri endale sobiv!
           </p>
         </div>
       </section>
@@ -60,7 +67,9 @@ const Shop = () => {
           {filteredProducts.length === 0 && (
             <div className="text-center py-16">
               <p className="text-muted-foreground text-lg">
-                Selles kategoorias tooteid hetkel pole.
+                {availableProducts.length === 0
+                  ? 'Kõik tooted on hetkel broneeritud.'
+                  : 'Selles kategoorias tooteid hetkel pole.'}
               </p>
             </div>
           )}

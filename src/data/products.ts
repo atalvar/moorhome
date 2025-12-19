@@ -1,0 +1,86 @@
+import { Product } from '@/contexts/CartContext';
+
+export const categories = [
+  'Kõik',
+  'Toolid',
+  'Lauad',
+  'Kapid',
+  'Diivanid',
+  'Voodid',
+  'Aksessuaarid',
+];
+
+export const products: Product[] = [
+  {
+    id: '1',
+    name: 'Restaureeritud Tamme Tool',
+    price: 189,
+    category: 'Toolid',
+    image: 'https://images.unsplash.com/photo-1503602642458-232111445657?w=400&h=400&fit=crop',
+    description: 'Käsitööna restaureeritud tammetooli, mis pärineb 1950ndatest. Uus polsterdus looduslikust linasest kangast.',
+  },
+  {
+    id: '2',
+    name: 'Vintage Kirjutuslaud',
+    price: 450,
+    category: 'Lauad',
+    image: 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=400&h=400&fit=crop',
+    description: 'Elegantne kirjutuslaud 1930ndatest. Täielikult restaureeritud ning lakitud originaalse pähkli viimistlusega.',
+  },
+  {
+    id: '3',
+    name: 'Art Deco Kapp',
+    price: 680,
+    category: 'Kapid',
+    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop',
+    description: 'Haruldane Art Deco stiilis kapp originaalse messingfurnituuriga. Hoolikalt taastatud.',
+  },
+  {
+    id: '4',
+    name: 'Skandinaavia Kohvilaud',
+    price: 320,
+    category: 'Lauad',
+    image: 'https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=400&h=400&fit=crop',
+    description: 'Minimalistlik kohvilaud teeki puust. 1960ndate Skandinaavia disain.',
+  },
+  {
+    id: '5',
+    name: 'Retro Tugitool',
+    price: 380,
+    category: 'Toolid',
+    image: 'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?w=400&h=400&fit=crop',
+    description: 'Mugav tugitool 1970ndatest. Uus villane polsterdus rohelises toonis.',
+  },
+  {
+    id: '6',
+    name: 'Antiikne Öökapp',
+    price: 145,
+    category: 'Kapid',
+    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop',
+    description: 'Kaunilt restaureeritud öökapp sahtliga. Ideaalne magamistuppa.',
+  },
+  {
+    id: '7',
+    name: 'Nahkdiivan',
+    price: 890,
+    category: 'Diivanid',
+    image: 'https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=400&h=400&fit=crop',
+    description: 'Klassikaline Chesterfield stiilis nahkdiivan. Käsitsi taastatud ja hooldatud.',
+  },
+  {
+    id: '8',
+    name: 'Maalitud Voodi',
+    price: 520,
+    category: 'Voodid',
+    image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=400&h=400&fit=crop',
+    description: 'Romantiline rauast voodiraam. Restaureeritud ja värvitud pehmesse kreemi tooni.',
+  },
+  {
+    id: '9',
+    name: 'Vintage Peegel',
+    price: 95,
+    category: 'Aksessuaarid',
+    image: 'https://images.unsplash.com/photo-1618220179428-22790b461013?w=400&h=400&fit=crop',
+    description: 'Kaunis kullatud raamiga peegel. Restaureeritud ja uue peegliklaaasiga.',
+  },
+];

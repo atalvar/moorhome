@@ -3,20 +3,20 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { CartProvider } from "@/contexts/CartContext";
+import { ReservationProvider } from "@/contexts/ReservationContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
-import Cart from "./pages/Cart";
+import Reservation from "./pages/Reservation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <CartProvider>
+    <ReservationProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -28,7 +28,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/pood" element={<Shop />} />
                 <Route path="/kontakt" element={<Contact />} />
-                <Route path="/ostukorv" element={<Cart />} />
+                <Route path="/broneering" element={<Reservation />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
@@ -36,7 +36,7 @@ const App = () => (
           </div>
         </BrowserRouter>
       </TooltipProvider>
-    </CartProvider>
+    </ReservationProvider>
   </QueryClientProvider>
 );
 

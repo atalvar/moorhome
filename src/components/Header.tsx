@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, X } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
+import { Calendar, Menu, X } from 'lucide-react';
+import { useReservation } from '@/contexts/ReservationContext';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 const Header = () => {
-  const { totalItems } = useCart();
+  const { totalItems } = useReservation();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -49,11 +49,11 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Cart & Mobile Menu */}
+          {/* Reservation & Mobile Menu */}
           <div className="flex items-center gap-2">
-            <Link to="/ostukorv">
+            <Link to="/broneering">
               <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
+                <Calendar className="h-5 w-5" />
                 {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-secondary text-secondary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
                     {totalItems}

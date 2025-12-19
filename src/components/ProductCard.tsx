@@ -1,7 +1,7 @@
-import { Product } from '@/contexts/CartContext';
-import { useCart } from '@/contexts/CartContext';
+import { Product } from '@/contexts/ReservationContext';
+import { useReservation } from '@/contexts/ReservationContext';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Plus } from 'lucide-react';
+import { Calendar, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProductCardProps {
@@ -9,11 +9,13 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const { addToCart } = useCart();
+  const { addToReservation, reservedItems } = useReservation();
 
-  const handleAddToCart = () => {
-    addToCart(product);
-    toast.success(`${product.name} lisatud ostukorvi`);
+  const isInReservation = reservedItems.some((item) => item.id === product.id);
+
+  const handleReserve = () => {
+    addToReservation(product);
+    toast.success(`${product.name} lisatud broneeringute nimekirja`);
   };
 
   return (
@@ -39,14 +41,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <span className="text-xl font-semibold text-foreground">
             {product.price} €
           </span>
-          <Button
-            onClick={handleAddToCart}
-            size="sm"
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Lisa
-          </Button>
+          {isInReservation ? (
+            <Button size="sm" variant="outline" disabled className="gap-2">
+              <Check className="h-4 w-4" />
+              Lisatud
+            </Button>
+          ) : (
+            <Button onClick={handleReserve} size="sm" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Broneeri
+            </Button>
+          )}
         </div>
       </div>
     </div>

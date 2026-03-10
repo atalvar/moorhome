@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useReservation, DeliveryMethod, CustomerInfo } from '@/contexts/ReservationContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,28 +11,39 @@ import { Trash2, Calendar, ArrowLeft, Truck, Store } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Reservation = () => {
-  const { reservedItems, removeFromReservation, updateDeliveryMethod, confirmReservation, clearReservation } = useReservation();
-  
+  const { reservedItems, removeFromReservation, updateDeliveryMethod, confirmReservation } = useReservation();
+  const queryClient = useQueryClient();
+
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: '',
     email: '',
     phone: '',
     address: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const needsAddress = reservedItems.some((item) => item.deliveryMethod === 'delivery');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (needsAddress && !customerInfo.address?.trim()) {
       toast.error('Palun sisesta kohaletoimetamise aadress');
       return;
     }
 
-    confirmReservation(customerInfo);
-    toast.success('Broneering kinnitatud! Võtame teiega peagi ühendust.');
-    setCustomerInfo({ name: '', email: '', phone: '', address: '' });
+    setIsSubmitting(true);
+    const success = await confirmReservation(customerInfo);
+    setIsSubmitting(false);
+
+    if (success) {
+      toast.success('Broneering kinnitatud! Võtame teiega peagi ühendust.');
+      setCustomerInfo({ name: '', email: '', phone: '', address: '' });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    } else {
+      toast.error('Viga broneeringu tegemisel. Palun proovi uuesti.');
+    }
   };
 
   if (reservedItems.length === 0) {
@@ -76,31 +88,19 @@ const Reservation = () => {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Reserved Items */}
             <div className="lg:col-span-2 space-y-4">
               {reservedItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-card p-4 rounded-lg border border-border animate-fade-in"
-                >
+                <div key={item.id} className="bg-card p-4 rounded-lg border border-border animate-fade-in">
                   <div className="flex gap-4">
                     <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-serif font-semibold text-foreground">
-                            {item.name}
-                          </h3>
+                          <h3 className="font-serif font-semibold text-foreground">{item.name}</h3>
                           <p className="text-sm text-secondary">{item.category}</p>
-                          <p className="text-lg font-semibold text-foreground mt-1">
-                            {item.price} €
-                          </p>
+                          <p className="text-lg font-semibold text-foreground mt-1">{item.price} €</p>
                         </div>
                         <Button
                           variant="ghost"
@@ -111,27 +111,23 @@ const Reservation = () => {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-
-                      {/* Delivery Method Selection */}
                       <div className="mt-4">
                         <p className="text-sm font-medium text-foreground mb-2">Kättetoimetamine:</p>
                         <RadioGroup
-                          value={item.deliveryMethod || 'pickup'}
+                          value={item.deliveryMethod}
                           onValueChange={(value) => updateDeliveryMethod(item.id, value as DeliveryMethod)}
                           className="flex gap-4"
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="pickup" id={`pickup-${item.id}`} />
                             <Label htmlFor={`pickup-${item.id}`} className="flex items-center gap-1 text-sm cursor-pointer">
-                              <Store className="h-4 w-4" />
-                              Tulen poodi järgi
+                              <Store className="h-4 w-4" /> Tulen poodi järgi
                             </Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="delivery" id={`delivery-${item.id}`} />
                             <Label htmlFor={`delivery-${item.id}`} className="flex items-center gap-1 text-sm cursor-pointer">
-                              <Truck className="h-4 w-4" />
-                              Kohaletoimetamine
+                              <Truck className="h-4 w-4" /> Kohaletoimetamine
                             </Label>
                           </div>
                         </RadioGroup>
@@ -142,77 +138,38 @@ const Reservation = () => {
               ))}
             </div>
 
-            {/* Reservation Form */}
             <div className="lg:col-span-1">
               <div className="bg-card p-6 rounded-lg border border-border sticky top-24">
-                <h2 className="font-serif text-xl font-semibold text-foreground mb-4">
-                  Kinnita broneering
-                </h2>
-                
+                <h2 className="font-serif text-xl font-semibold text-foreground mb-4">Kinnita broneering</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <Label htmlFor="name">Nimi *</Label>
-                    <Input
-                      id="name"
-                      value={customerInfo.name}
-                      onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                      placeholder="Sinu nimi"
-                      required
-                    />
+                    <Input id="name" value={customerInfo.name} onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })} placeholder="Sinu nimi" required />
                   </div>
-
                   <div>
                     <Label htmlFor="email">E-post *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={customerInfo.email}
-                      onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
-                      placeholder="sinu@email.ee"
-                      required
-                    />
+                    <Input id="email" type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })} placeholder="sinu@email.ee" required />
                   </div>
-
                   <div>
                     <Label htmlFor="phone">Telefon *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={customerInfo.phone}
-                      onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
-                      placeholder="+372 ..."
-                      required
-                    />
+                    <Input id="phone" type="tel" value={customerInfo.phone} onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })} placeholder="+372 ..." required />
                   </div>
-
                   {needsAddress && (
                     <div>
                       <Label htmlFor="address">Kohaletoimetamise aadress *</Label>
-                      <Textarea
-                        id="address"
-                        value={customerInfo.address}
-                        onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })}
-                        placeholder="Täisaadress koos postiindeksiga"
-                        rows={3}
-                        required
-                      />
+                      <Textarea id="address" value={customerInfo.address} onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })} placeholder="Täisaadress koos postiindeksiga" rows={3} required />
                     </div>
                   )}
-
                   <div className="pt-4 border-t border-border">
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Pärast broneeringu kinnitamist võtame teiega 24h jooksul ühendust.
-                    </p>
-                    <Button type="submit" className="w-full" size="lg">
-                      Kinnita broneering
+                    <p className="text-sm text-muted-foreground mb-4">Pärast broneeringu kinnitamist võtame teiega 24h jooksul ühendust.</p>
+                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                      {isSubmitting ? 'Kinnitamine...' : 'Kinnita broneering'}
                     </Button>
                   </div>
                 </form>
-
                 <Link to="/pood" className="block mt-4">
                   <Button variant="outline" className="w-full gap-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    Jätka sirvimist
+                    <ArrowLeft className="h-4 w-4" /> Jätka sirvimist
                   </Button>
                 </Link>
               </div>

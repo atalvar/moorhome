@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Product {
   id: string;
@@ -7,23 +8,13 @@ export interface Product {
   category: string;
   image: string;
   description: string;
+  is_reserved?: boolean;
 }
 
 export type DeliveryMethod = 'pickup' | 'delivery';
 
-interface ReservationItem extends Product {
-  deliveryMethod?: DeliveryMethod;
-}
-
-interface ReservationContextType {
-  reservedItems: ReservationItem[];
-  reservedProductIds: string[];
-  addToReservation: (product: Product) => void;
-  removeFromReservation: (productId: string) => void;
-  updateDeliveryMethod: (productId: string, method: DeliveryMethod) => void;
-  clearReservation: () => void;
-  confirmReservation: (customerInfo: CustomerInfo) => void;
-  totalItems: number;
+export interface ReservationItem extends Product {
+  deliveryMethod: DeliveryMethod;
 }
 
 export interface CustomerInfo {
@@ -33,27 +24,24 @@ export interface CustomerInfo {
   address?: string;
 }
 
-const ReservationContext = createContext<ReservationContextType | undefined>(undefined);
+interface ReservationContextType {
+  reservedItems: ReservationItem[];
+  addToReservation: (product: Product) => void;
+  removeFromReservation: (productId: string) => void;
+  updateDeliveryMethod: (productId: string, method: DeliveryMethod) => void;
+  clearReservation: () => void;
+  confirmReservation: (customerInfo: CustomerInfo) => Promise<boolean>;
+  totalItems: number;
+}
 
-const RESERVED_IDS_KEY = 'reserved_product_ids';
+const ReservationContext = createContext<ReservationContextType | undefined>(undefined);
 
 export const ReservationProvider = ({ children }: { children: ReactNode }) => {
   const [reservedItems, setReservedItems] = useState<ReservationItem[]>([]);
-  const [reservedProductIds, setReservedProductIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem(RESERVED_IDS_KEY);
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem(RESERVED_IDS_KEY, JSON.stringify(reservedProductIds));
-  }, [reservedProductIds]);
 
   const addToReservation = (product: Product) => {
-    if (reservedProductIds.includes(product.id)) return;
-    
     setReservedItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
-      if (existing) return prev;
+      if (prev.find((item) => item.id === product.id)) return prev;
       return [...prev, { ...product, deliveryMethod: 'pickup' }];
     });
   };
@@ -72,11 +60,45 @@ export const ReservationProvider = ({ children }: { children: ReactNode }) => {
 
   const clearReservation = () => setReservedItems([]);
 
-  const confirmReservation = (customerInfo: CustomerInfo) => {
-    // Mark all items as permanently reserved
-    const newReservedIds = reservedItems.map((item) => item.id);
-    setReservedProductIds((prev) => [...prev, ...newReservedIds]);
+  const confirmReservation = async (customerInfo: CustomerInfo): Promise<boolean> => {
+    // 1. Create reservation record
+    const { data: reservation, error: resError } = await supabase
+      .from('reservations')
+      .insert({
+        customer_name: customerInfo.name,
+        customer_email: customerInfo.email,
+        customer_phone: customerInfo.phone,
+        customer_address: customerInfo.address || null,
+      })
+      .select()
+      .single();
+
+    if (resError || !reservation) return false;
+
+    // 2. Create reservation items
+    const items = reservedItems.map((item) => ({
+      reservation_id: reservation.id,
+      product_id: item.id,
+      delivery_method: item.deliveryMethod,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('reservation_items')
+      .insert(items);
+
+    if (itemsError) return false;
+
+    // 3. Mark products as reserved
+    const productIds = reservedItems.map((item) => item.id);
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({ is_reserved: true })
+      .in('id', productIds);
+
+    if (updateError) return false;
+
     setReservedItems([]);
+    return true;
   };
 
   const totalItems = reservedItems.length;
@@ -85,7 +107,6 @@ export const ReservationProvider = ({ children }: { children: ReactNode }) => {
     <ReservationContext.Provider
       value={{
         reservedItems,
-        reservedProductIds,
         addToReservation,
         removeFromReservation,
         updateDeliveryMethod,

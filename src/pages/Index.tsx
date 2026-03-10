@@ -1,18 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Hammer, Heart, Recycle } from 'lucide-react';
-import { products } from '@/data/products';
-import { useReservation } from '@/contexts/ReservationContext';
+import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 
 const Index = () => {
-  const { reservedProductIds } = useReservation();
-  
-  // Get available featured products (not reserved)
-  const availableProducts = products.filter(
-    (product) => !reservedProductIds.includes(product.id)
-  );
-  const featuredProducts = availableProducts.slice(0, 3);
+  const { data: products = [] } = useProducts();
+  const featuredProducts = products.slice(0, 3);
 
   return (
     <div className="min-h-screen">
@@ -76,21 +70,9 @@ const Index = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              {
-                icon: Hammer,
-                title: 'Käsitöö',
-                description: 'Iga ese restaureeritakse hoolikalt käsitsi, kasutades traditsioonilisi tehnikaid.',
-              },
-              {
-                icon: Heart,
-                title: 'Kirg',
-                description: 'Armastame vana mööblit ja anname endast parima, et tuua välja selle ilu.',
-              },
-              {
-                icon: Recycle,
-                title: 'Jätkusuutlikkus',
-                description: 'Restaureerimine on keskkonnasõbralik viis mööbli eluea pikendamiseks.',
-              },
+              { icon: Hammer, title: 'Käsitöö', description: 'Iga ese restaureeritakse hoolikalt käsitsi, kasutades traditsioonilisi tehnikaid.' },
+              { icon: Heart, title: 'Kirg', description: 'Armastame vana mööblit ja anname endast parima, et tuua välja selle ilu.' },
+              { icon: Recycle, title: 'Jätkusuutlikkus', description: 'Restaureerimine on keskkonnasõbralik viis mööbli eluea pikendamiseks.' },
             ].map((value, index) => (
               <div
                 key={index}
@@ -100,12 +82,8 @@ const Index = () => {
                 <div className="w-14 h-14 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-4">
                   <value.icon className="h-7 w-7 text-secondary" />
                 </div>
-                <h3 className="font-serif text-xl font-semibold text-foreground mb-2">
-                  {value.title}
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {value.description}
-                </p>
+                <h3 className="font-serif text-xl font-semibold text-foreground mb-2">{value.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{value.description}</p>
               </div>
             ))}
           </div>
@@ -118,12 +96,8 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
               <div>
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
-                  Valitud tooted
-                </h2>
-                <p className="text-muted-foreground mt-2">
-                  Avasta meie parimad restaureeritud mööbliesemed
-                </p>
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">Valitud tooted</h2>
+                <p className="text-muted-foreground mt-2">Avasta meie parimad restaureeritud mööbliesemed</p>
               </div>
               <Link to="/pood">
                 <Button variant="outline" className="gap-2">
@@ -134,11 +108,7 @@ const Index = () => {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
+                <div key={product.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -157,11 +127,7 @@ const Index = () => {
             Võta meiega ühendust ja arutame, kuidas saame sinu lemmikut mööblit restaureerida.
           </p>
           <Link to="/kontakt" className="inline-block mt-8">
-            <Button
-              variant="secondary"
-              size="lg"
-              className="gap-2"
-            >
+            <Button variant="secondary" size="lg" className="gap-2">
               Küsi hinnapakkumist
               <ArrowRight className="h-4 w-4" />
             </Button>

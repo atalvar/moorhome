@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProducts } from '@/hooks/useProducts';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { LogOut, Plus, Trash2, Edit2, Package, ClipboardList, Loader2, X, RotateCcw } from 'lucide-react';
+import { LogOut, Plus, Trash2, Edit2, Package, ClipboardList, Loader2, X, RotateCcw, Upload, ShieldAlert } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 interface ProductForm {
@@ -25,13 +25,27 @@ const emptyForm: ProductForm = { name: '', category: '', description: '', image:
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
-  const { data: products = [], isLoading: productsLoading } = useProducts(true);
   const queryClient = useQueryClient();
+
+  // Check admin role
+  const { data: isAdmin, isLoading: roleLoading } = useQuery({
+    queryKey: ['admin-role', user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+      return !!data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: products = [], isLoading: productsLoading } = useProducts(true);
 
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: reservations = [], isLoading: reservationsLoading } = useQuery({
     queryKey: ['reservations'],
@@ -54,9 +68,10 @@ const Admin = () => {
       );
       return withItems;
     },
+    enabled: !!isAdmin,
   });
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -65,6 +80,46 @@ const Admin = () => {
   }
 
   if (!user) return <Navigate to="/admin/login" replace />;
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <ShieldAlert className="h-16 w-16 text-destructive mx-auto mb-4" />
+          <h1 className="font-serif text-2xl font-bold text-foreground mb-2">Ligipääs keelatud</h1>
+          <p className="text-muted-foreground mb-6">Sul ei ole admin õigusi.</p>
+          <Button onClick={signOut} variant="outline">Logi välja</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const fileName = `${crypto.randomUUID()}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('product-images')
+      .upload(fileName, file);
+
+    if (error) {
+      toast.error('Pildi üleslaadimine ebaõnnestus');
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(fileName);
+
+    setForm({ ...form, image: urlData.publicUrl });
+    setUploading(false);
+    toast.success('Pilt üles laetud');
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,18 +135,12 @@ const Admin = () => {
 
     if (editingId) {
       const { error } = await supabase.from('products').update(productData).eq('id', editingId);
-      if (error) {
-        toast.error('Muutmine ebaõnnestus');
-      } else {
-        toast.success('Toode uuendatud');
-      }
+      if (error) toast.error('Muutmine ebaõnnestus');
+      else toast.success('Toode uuendatud');
     } else {
       const { error } = await supabase.from('products').insert(productData);
-      if (error) {
-        toast.error('Lisamine ebaõnnestus');
-      } else {
-        toast.success('Toode lisatud');
-      }
+      if (error) toast.error('Lisamine ebaõnnestus');
+      else toast.success('Toode lisatud');
     }
 
     setSaving(false);
@@ -114,16 +163,22 @@ const Admin = () => {
   };
 
   const handleDelete = async (id: string) => {
+    // Delete related reservation items first
+    await supabase.from('reservation_items').delete().eq('product_id', id);
     const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) {
-      toast.error('Kustutamine ebaõnnestus');
-    } else {
+    if (error) toast.error('Kustutamine ebaõnnestus');
+    else {
       toast.success('Toode kustutatud');
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
     }
   };
 
   const handleUnreserve = async (productId: string) => {
+    // Remove reservation items for this product
+    await supabase.from('reservation_items').delete().eq('product_id', productId);
+
+    // Set product back to available
     const { error } = await supabase.from('products').update({ is_reserved: false }).eq('id', productId);
     if (error) {
       toast.error('Broneeringu tühistamine ebaõnnestus');
@@ -193,8 +248,37 @@ const Admin = () => {
                     <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
                   </div>
                   <div>
-                    <Label>Pildi URL</Label>
-                    <Input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} required placeholder="https://..." />
+                    <Label>Pilt</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={form.image}
+                        onChange={(e) => setForm({ ...form, image: e.target.value })}
+                        placeholder="URL või lae üles"
+                        required
+                        className="flex-1"
+                      />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    {form.image && (
+                      <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden bg-muted border border-border">
+                        <img src={form.image} alt="Eelvaade" className="w-full h-full object-cover" />
+                      </div>
+                    )}
                   </div>
                   <div className="sm:col-span-2">
                     <Label>Kirjeldus</Label>

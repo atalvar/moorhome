@@ -10,9 +10,19 @@ import Index from "./pages/Index";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
 import Reservation from "./pages/Reservation";
+import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const PublicLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex flex-col min-h-screen">
+    <Header />
+    <main className="flex-1">{children}</main>
+    <Footer />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -21,19 +31,15 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-1">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/pood" element={<Shop />} />
-                <Route path="/kontakt" element={<Contact />} />
-                <Route path="/broneering" element={<Reservation />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
+          <Routes>
+            <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+            <Route path="/pood" element={<PublicLayout><Shop /></PublicLayout>} />
+            <Route path="/kontakt" element={<PublicLayout><Contact /></PublicLayout>} />
+            <Route path="/broneering" element={<PublicLayout><Reservation /></PublicLayout>} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </ReservationProvider>

@@ -51,16 +51,16 @@ const Header = () => {
 
           {/* Reservation & Mobile Menu */}
           <div className="flex items-center gap-2">
-            <Link to="/broneering">
-              <Button variant="ghost" size="icon" className="relative">
-                <Calendar className="h-5 w-5" />
-                {totalItems > 0 && (
+            {totalItems > 0 && (
+              <Link to="/broneering">
+                <Button variant="ghost" size="icon" className="relative animate-fade-in">
+                  <Calendar className="h-5 w-5" />
                   <span className="absolute -top-1 -right-1 bg-secondary text-secondary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
                     {totalItems}
                   </span>
-                )}
-              </Button>
-            </Link>
+                </Button>
+              </Link>
+            )}
             
             <Button
               variant="ghost"

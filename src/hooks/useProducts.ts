@@ -2,16 +2,20 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Product } from '@/contexts/ReservationContext';
 
-export const useProducts = () => {
+export const useProducts = (includeReserved = false) => {
   return useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', includeReserved],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('*')
-        .eq('is_reserved', false)
         .order('created_at', { ascending: false });
 
+      if (!includeReserved) {
+        query = query.eq('is_reserved', false);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },

@@ -171,6 +171,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_reservation: {
+        Args: {
+          p_customer_address?: string
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_items?: Json
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

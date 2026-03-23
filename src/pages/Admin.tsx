@@ -341,11 +341,6 @@ const Admin = () => {
                           </p>
                         </div>
                         <div className="flex gap-1">
-                          {product.is_reserved && (
-                            <Button variant="ghost" size="icon" onClick={() => handleUnreserve(product.id)} title="Tühista broneering">
-                              <RotateCcw className="h-4 w-4" />
-                            </Button>
-                          )}
                           <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
                             <Edit2 className="h-4 w-4" />
                           </Button>

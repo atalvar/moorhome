@@ -171,7 +171,6 @@ const Admin = () => {
     });
     setEditingId(product.id);
     setShowForm(true);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   const handleDelete = async (id: string) => {
@@ -266,12 +265,10 @@ const Admin = () => {
               </Button>
             </div>
 
-            {showForm && (
+            {showForm && !editingId && (
               <form ref={formRef} onSubmit={handleSave} className="bg-card p-6 rounded-lg border border-border mb-6 animate-fade-in">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-serif text-lg font-semibold">
-                    {editingId ? 'Muuda toodet' : 'Uus toode'}
-                  </h3>
+                  <h3 className="font-serif text-lg font-semibold">Uus toode</h3>
                   <Button type="button" variant="ghost" size="icon" onClick={() => { setShowForm(false); setForm(emptyForm); setEditingId(null); }}>
                     <X className="h-4 w-4" />
                   </Button>
@@ -307,7 +304,7 @@ const Admin = () => {
                 </div>
                 <div className="flex gap-2 mt-4">
                   <Button type="submit" disabled={saving}>
-                    {saving ? 'Salvestamine...' : editingId ? 'Salvesta muudatused' : 'Lisa toode'}
+                    {saving ? 'Salvestamine...' : 'Lisa toode'}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => { setShowForm(false); setForm(emptyForm); setEditingId(null); }}>
                     Tühista
@@ -327,61 +324,110 @@ const Admin = () => {
                   const imgCount = allImages.filter((img) => img.product_id === product.id).length;
                   const hasSale = product.sale_price != null && product.sale_price < product.price;
                   return (
-                    <div key={product.id} className="bg-card p-4 rounded-lg border border-border flex gap-4 items-center">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                        <img src={thumbUrl} alt={product.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-foreground">{product.name}</h3>
-                          {product.is_reserved && (
-                            <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">Broneeritud</span>
-                          )}
+                    <div key={product.id}>
+                      <div className="bg-card p-4 rounded-lg border border-border flex gap-4 items-center">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                          <img src={thumbUrl} alt={product.name} className="w-full h-full object-cover" />
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {product.category} · {hasSale ? (
-                            <>
-                              <span className="line-through">{product.price} €</span>
-                              {' '}
-                              <span className="text-destructive font-medium">{product.sale_price} €</span>
-                            </>
-                          ) : (
-                            <>{product.price} €</>
-                          )}
-                          {imgCount > 1 && ` · ${imgCount} pilti`}
-                        </p>
-                      </div>
-                      <div className="flex gap-1">
-                        {product.is_reserved && (
-                          <Button variant="ghost" size="icon" onClick={() => handleUnreserve(product.id)} title="Tühista broneering">
-                            <RotateCcw className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium text-foreground">{product.name}</h3>
+                            {product.is_reserved && (
+                              <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">Broneeritud</span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {product.category} · {hasSale ? (
+                              <>
+                                <span className="line-through">{product.price} €</span>
+                                {' '}
+                                <span className="text-destructive font-medium">{product.sale_price} €</span>
+                              </>
+                            ) : (
+                              <>{product.price} €</>
+                            )}
+                            {imgCount > 1 && ` · ${imgCount} pilti`}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          {product.is_reserved && (
+                            <Button variant="ghost" size="icon" onClick={() => handleUnreserve(product.id)} title="Tühista broneering">
+                              <RotateCcw className="h-4 w-4" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Kustuta toode?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Kas oled kindel, et soovid toote "{product.name}" kustutada? Seda toimingut ei saa tagasi võtta.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Tühista</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(product.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                Kustuta
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          )}
+                          <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Kustuta toode?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Kas oled kindel, et soovid toote "{product.name}" kustutada? Seda toimingut ei saa tagasi võtta.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Tühista</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(product.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  Kustuta
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
+                      {editingId === product.id && showForm && (
+                        <form ref={formRef} onSubmit={handleSave} className="bg-card p-6 rounded-lg border-2 border-primary/30 mt-1 mb-2 animate-fade-in">
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-serif text-lg font-semibold">Muuda toodet</h3>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => { setShowForm(false); setForm(emptyForm); setEditingId(null); }}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label>Nimi</Label>
+                              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                            </div>
+                            <div>
+                              <Label>Kategooria</Label>
+                              <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required placeholder="nt. Toolid, Kapid" />
+                            </div>
+                            <div>
+                              <Label>Hind (€)</Label>
+                              <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+                            </div>
+                            <div>
+                              <Label>Soodushind (€)</Label>
+                              <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder="Jäta tühjaks kui pole" />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <Label>Pildid</Label>
+                              <AdminImageManager
+                                images={form.images}
+                                onChange={(images) => setForm({ ...form, images })}
+                              />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <Label>Kirjeldus</Label>
+                              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={3} />
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mt-4">
+                            <Button type="submit" disabled={saving}>
+                              {saving ? 'Salvestamine...' : 'Salvesta muudatused'}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={() => { setShowForm(false); setForm(emptyForm); setEditingId(null); }}>
+                              Tühista
+                            </Button>
+                          </div>
+                        </form>
+                      )}
                     </div>
                   );
                 })}

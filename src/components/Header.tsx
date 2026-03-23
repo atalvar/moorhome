@@ -19,12 +19,12 @@ const Header = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border">
+    <header className="sticky top-0 z-50 bg-background/80 glass border-b border-border/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="Moor Home logo" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover" />
+          <Link to="/" className="flex items-center gap-3 group">
+            <img src={logo} alt="Moor Home logo" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shadow-soft transition-transform duration-300 group-hover:scale-105" />
             <div className="hidden sm:block">
               <h1 className="font-serif text-lg md:text-xl font-semibold text-foreground">Moor Home</h1>
               <p className="text-xs text-muted-foreground -mt-0.5">Restaureerimine & Müük</p>
@@ -37,11 +37,14 @@ const Header = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
+                className={`text-sm font-medium transition-all duration-300 hover:text-primary relative ${
                   isActive(link.path) ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 {link.label}
+                {isActive(link.path) && (
+                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 gradient-warm rounded-full" />
+                )}
               </Link>
             ))}
           </nav>
@@ -52,7 +55,7 @@ const Header = () => {
               <Link to="/broneering">
                 <Button variant="ghost" size="icon" className="relative animate-fade-in">
                   <Calendar className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 bg-secondary text-secondary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 gradient-warm text-primary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium shadow-soft">
                     {totalItems}
                   </span>
                 </Button>
@@ -72,7 +75,7 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-4 border-t border-border animate-fade-in">
+          <nav className="md:hidden py-4 border-t border-border/50 animate-fade-in">
             {navLinks.map((link) => (
               <Link
                 key={link.path}

@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface ProductImageGalleryProps {
@@ -10,11 +11,11 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
   const [open, setOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const goTo = (index: number) => {
+  const goTo = useCallback((index: number) => {
+    if (images.length === 0) return;
     setCurrentIndex((index + images.length) % images.length);
-  };
+  }, [images.length]);
 
-  // Close on Escape & arrow keys
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -24,15 +25,10 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [open, currentIndex]);
+  }, [open, currentIndex, goTo]);
 
-  // Prevent body scroll when open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = open ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
@@ -56,33 +52,33 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
         )}
       </div>
 
-      {open && (
+      {open && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-[100] flex items-center justify-center animate-fade-in"
           onClick={() => setOpen(false)}
         >
-          {/* Dark overlay */}
-          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" />
+          {/* Dark backdrop */}
+          <div className="absolute inset-0 bg-black/90" />
 
-          {/* Close button */}
+          {/* Close */}
           <button
             onClick={(e) => { e.stopPropagation(); setOpen(false); }}
-            className="absolute top-5 right-5 z-50 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            className="absolute top-5 right-5 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
           >
             <X className="h-5 w-5 text-white" />
           </button>
 
-          {/* Navigation arrows */}
+          {/* Arrows */}
           {images.length > 1 && (
             <>
               <button
-                className="absolute left-5 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
                 onClick={(e) => { e.stopPropagation(); goTo(currentIndex - 1); }}
               >
                 <ChevronLeft className="h-6 w-6 text-white" />
               </button>
               <button
-                className="absolute right-5 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
                 onClick={(e) => { e.stopPropagation(); goTo(currentIndex + 1); }}
               >
                 <ChevronRight className="h-6 w-6 text-white" />
@@ -91,18 +87,17 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
           )}
 
           {/* Image */}
-          <div className="relative z-10" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={images[currentIndex]}
-              alt={`${alt} ${currentIndex + 1}`}
-              className="max-w-[85vw] max-h-[80vh] object-contain rounded-lg shadow-2xl"
-            />
-          </div>
+          <img
+            src={images[currentIndex]}
+            alt={`${alt} ${currentIndex + 1}`}
+            className="relative z-10 max-w-[85vw] max-h-[85vh] object-contain select-none"
+            onClick={(e) => e.stopPropagation()}
+          />
 
           {/* Thumbnails */}
           {images.length > 1 && (
             <div
-              className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-full"
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-black/50 backdrop-blur-md px-4 py-2.5 rounded-full"
               onClick={(e) => e.stopPropagation()}
             >
               {images.map((img, i) => (
@@ -120,7 +115,8 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
               ))}
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

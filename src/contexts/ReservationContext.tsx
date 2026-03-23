@@ -22,10 +22,11 @@ export interface CustomerInfo {
 }
 
 interface ReservationContextType {
-  reservedItems: ReservationItem[];
+  reservedItems: Product[];
+  deliveryMethod: DeliveryMethod;
+  setDeliveryMethod: (method: DeliveryMethod) => void;
   addToReservation: (product: Product) => void;
   removeFromReservation: (productId: string) => void;
-  updateDeliveryMethod: (productId: string, method: DeliveryMethod) => void;
   clearReservation: () => void;
   confirmReservation: (customerInfo: CustomerInfo) => Promise<boolean>;
   totalItems: number;

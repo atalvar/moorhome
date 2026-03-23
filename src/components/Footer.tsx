@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 
 const Footer = () => {
   return (
@@ -9,9 +10,7 @@ const Footer = () => {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-                <span className="font-serif text-lg font-bold">M</span>
-              </div>
+              <img src={logoImg} alt="Moor Home logo" className="w-10 h-10 rounded-full object-cover" />
               <div>
                 <h3 className="font-serif text-lg font-semibold">Moor Home</h3>
                 <p className="text-xs text-primary-foreground/70">Restaureerimine & Müük</p>

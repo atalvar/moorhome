@@ -3,6 +3,7 @@ import { Calendar, Menu, X } from "lucide-react";
 import { useReservation } from "@/contexts/ReservationContext";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 
 const Header = () => {
   const { totalItems } = useReservation();

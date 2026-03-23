@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Menu, X, Shield } from "lucide-react";
+import { Calendar, Menu, X, LogOut } from "lucide-react";
 import { useReservation } from "@/contexts/ReservationContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
@@ -8,7 +8,7 @@ import logo from "@/assets/logo.png";
 
 const Header = () => {
   const { totalItems } = useReservation();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -52,8 +52,17 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Reservation & Mobile Menu */}
+          {/* Right side: account, reservation, mobile menu */}
           <div className="flex items-center gap-2">
+            {user && (
+              <div className="hidden md:flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{user.email}</span>
+                <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground hover:text-foreground">
+                  <LogOut className="h-4 w-4" /> Logi välja
+                </Button>
+              </div>
+            )}
+
             {totalItems > 0 && (
               <Link to="/broneering">
                 <Button variant="ghost" size="icon" className="relative animate-fade-in">
@@ -91,6 +100,14 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
+            {user && (
+              <div className="pt-3 border-t border-border/50 mt-2">
+                <span className="block text-sm text-muted-foreground py-2">{user.email}</span>
+                <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 px-0 text-muted-foreground">
+                  <LogOut className="h-4 w-4" /> Logi välja
+                </Button>
+              </div>
+            )}
           </nav>
         )}
       </div>

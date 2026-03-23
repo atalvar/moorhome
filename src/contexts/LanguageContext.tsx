@@ -147,7 +147,7 @@ const translations = {
     admin_return_multi: "Pane kõik tagasi müüki?",
     admin_delete_all: "Kustuta kõik",
     admin_delivery: "🚚 Kohaletoimetamine",
-    admin_pickup: "🏪 Poest järgi",
+    admin_pickup: "🏪 Poodi järgi ",
     admin_back_sale_success: "Tooted tagasi müügis",
     admin_no_access: "Ligipääs keelatud",
     admin_no_rights: "Sul ei ole admin õigusi.",

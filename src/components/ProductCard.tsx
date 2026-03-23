@@ -1,9 +1,10 @@
 import { Product } from '@/contexts/ReservationContext';
 import { useReservation } from '@/contexts/ReservationContext';
 import { useProductImages } from '@/hooks/useProductImages';
+import { useLanguage } from '@/contexts/LanguageContext';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import { Button } from '@/components/ui/button';
-import { Calendar, Check } from 'lucide-react';
+import { ShoppingBag, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProductCardProps {
@@ -13,12 +14,13 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToReservation, reservedItems } = useReservation();
   const { data: extraImages = [] } = useProductImages(product.id);
+  const { t } = useLanguage();
 
   const isInReservation = reservedItems.some((item) => item.id === product.id);
 
   const handleReserve = () => {
     addToReservation(product);
-    toast.success(`${product.name} lisatud broneeringute nimekirja`, {
+    toast.success(`${product.name} ${t.product_added_toast}`, {
       duration: 4000,
       style: { fontSize: '16px', padding: '16px' },
     });
@@ -63,12 +65,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {isInReservation ? (
             <Button size="sm" variant="outline" disabled className="gap-2 rounded-full">
               <Check className="h-4 w-4" />
-              Lisatud
+              {t.product_added}
             </Button>
           ) : (
             <Button onClick={handleReserve} size="sm" className="gap-2 rounded-full gradient-warm border-0 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-300">
-              <Calendar className="h-4 w-4" />
-              Broneeri
+              <ShoppingBag className="h-4 w-4" />
+              {t.product_buy}
             </Button>
           )}
         </div>

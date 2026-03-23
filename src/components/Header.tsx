@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Calendar, Menu, X, LogOut } from "lucide-react";
 import { useReservation } from "@/contexts/ReservationContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
@@ -9,14 +10,15 @@ import logo from "@/assets/logo.png";
 const Header = () => {
   const { totalItems } = useReservation();
   const { user, signOut } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { path: "/", label: "Avaleht" },
-    { path: "/pood", label: "Pood" },
-    { path: "/kontakt", label: "Kontakt" },
-    ...(user ? [{ path: "/admin", label: "Admin" }] : []),
+    { path: "/", label: t.nav_home },
+    { path: "/pood", label: t.nav_shop },
+    { path: "/kontakt", label: t.nav_contact },
+    ...(user ? [{ path: "/admin", label: t.nav_admin }] : []),
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -30,7 +32,7 @@ const Header = () => {
             <img src={logo} alt="Moor Home logo" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover shadow-soft transition-transform duration-300 group-hover:scale-105" />
             <div className="hidden sm:block">
               <h1 className="font-serif text-lg md:text-xl font-semibold text-foreground">Moor Home</h1>
-              <p className="text-xs text-muted-foreground -mt-0.5">Restaureerimine & Müük</p>
+              <p className="text-xs text-muted-foreground -mt-0.5">{t.footer_subtitle}</p>
             </div>
           </Link>
 
@@ -52,13 +54,33 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Right side: account, reservation, mobile menu */}
+          {/* Right side */}
           <div className="flex items-center gap-2">
+            {/* Language switcher */}
+            <div className="flex rounded-full border border-border overflow-hidden">
+              <button
+                onClick={() => setLanguage('et')}
+                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                  language === 'et' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                ET
+              </button>
+              <button
+                onClick={() => setLanguage('en')}
+                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                  language === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                EN
+              </button>
+            </div>
+
             {user && (
               <div className="hidden md:flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{user.email}</span>
                 <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground hover:text-foreground">
-                  <LogOut className="h-4 w-4" /> Logi välja
+                  <LogOut className="h-4 w-4" /> {t.auth_logout}
                 </Button>
               </div>
             )}
@@ -104,7 +126,7 @@ const Header = () => {
               <div className="pt-3 border-t border-border/50 mt-2">
                 <span className="block text-sm text-muted-foreground py-2">{user.email}</span>
                 <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 px-0 text-muted-foreground">
-                  <LogOut className="h-4 w-4" /> Logi välja
+                  <LogOut className="h-4 w-4" /> {t.auth_logout}
                 </Button>
               </div>
             )}

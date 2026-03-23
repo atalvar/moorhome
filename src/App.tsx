@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ReservationProvider } from "@/contexts/ReservationContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
@@ -26,23 +27,25 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ReservationProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
-            <Route path="/pood" element={<PublicLayout><Shop /></PublicLayout>} />
-            <Route path="/kontakt" element={<PublicLayout><Contact /></PublicLayout>} />
-            <Route path="/broneering" element={<PublicLayout><Reservation /></PublicLayout>} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<PublicLayout><Admin /></PublicLayout>} />
-            <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ReservationProvider>
+    <LanguageProvider>
+      <ReservationProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+              <Route path="/pood" element={<PublicLayout><Shop /></PublicLayout>} />
+              <Route path="/kontakt" element={<PublicLayout><Contact /></PublicLayout>} />
+              <Route path="/broneering" element={<PublicLayout><Reservation /></PublicLayout>} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<PublicLayout><Admin /></PublicLayout>} />
+              <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ReservationProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 

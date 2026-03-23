@@ -47,6 +47,10 @@ const translations = {
     shop_title: "Meie Pood",
     shop_subtitle: "Sirvi meie hoolikalt restaureeritud mööblit. Iga ese on ainulaadne — osta endale sobiv!",
     shop_all: "Kõik",
+    shop_cat_furniture: "Mööbel",
+    shop_cat_lighting: "Valgustid",
+    shop_cat_misc: "Varia",
+    shop_cat_sale: "Soodus -%",
     shop_empty_all: "Kõik tooted on hetkel müüdud.",
     shop_empty_cat: "Selles kategoorias tooteid hetkel pole.",
 

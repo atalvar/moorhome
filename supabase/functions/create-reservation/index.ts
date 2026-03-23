@@ -70,8 +70,23 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error("Reservation error:", error.message);
+      // Map known errors to safe user-facing messages
+      let safeMessage = "Tellimust ei saanud luua. Proovi uuesti.";
+      if (error.message.includes("already reserved")) {
+        safeMessage = "Üks või mitu toodet ei ole enam saadaval.";
+      } else if (error.message.includes("Item count")) {
+        safeMessage = "Lubamatu toodete arv.";
+      } else if (error.message.includes("Invalid email")) {
+        safeMessage = "Vigane e-posti aadress.";
+      } else if (error.message.includes("Phone must be")) {
+        safeMessage = "Vigane telefoninumber.";
+      } else if (error.message.includes("Customer name")) {
+        safeMessage = "Vigane nimi.";
+      } else if (error.message.includes("Address must be")) {
+        safeMessage = "Aadress on liiga pikk.";
+      }
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: safeMessage }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { LogOut, Plus, Trash2, Edit2, Package, ClipboardList, Loader2, X, RotateCcw, ShieldAlert } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -20,10 +21,11 @@ interface ProductForm {
   category: string;
   description: string;
   price: string;
+  sale_price: string;
   images: ImageItem[];
 }
 
-const emptyForm: ProductForm = { name: '', category: '', description: '', price: '', images: [] };
+const emptyForm: ProductForm = { name: '', category: '', description: '', price: '', sale_price: '', images: [] };
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -69,6 +71,9 @@ const Admin = () => {
     enabled: !!isAdmin,
   });
 
+  // Sort products alphabetically for admin view
+  const sortedProducts = [...products].sort((a, b) => a.name.localeCompare(b.name, 'et'));
+
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -107,12 +112,13 @@ const Admin = () => {
     }
     setSaving(true);
 
-    const productData = {
+    const productData: any = {
       name: form.name,
       category: form.category,
       description: form.description,
-      image: form.images[0].image_url, // Main image stays in products table
+      image: form.images[0].image_url,
       price: parseFloat(form.price),
+      sale_price: form.sale_price ? parseFloat(form.sale_price) : null,
     };
 
     let productId = editingId;
@@ -126,12 +132,8 @@ const Admin = () => {
       productId = data.id;
     }
 
-    // Sync product_images
     if (productId) {
-      // Delete existing images for this product
       await supabase.from('product_images').delete().eq('product_id', productId);
-
-      // Insert all images
       const imageRecords = form.images.map((img, i) => ({
         product_id: productId!,
         image_url: img.image_url,
@@ -156,7 +158,6 @@ const Admin = () => {
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((img) => ({ id: img.id, image_url: img.image_url, sort_order: img.sort_order }));
 
-    // If no extra images, use main image
     const images = productImgs.length > 0 ? productImgs : [{ image_url: product.image, sort_order: 0 }];
 
     setForm({
@@ -164,6 +165,7 @@ const Admin = () => {
       category: product.category,
       description: product.description,
       price: String(product.price),
+      sale_price: product.sale_price ? String(product.sale_price) : '',
       images,
     });
     setEditingId(product.id);
@@ -192,6 +194,39 @@ const Admin = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
     }
+  };
+
+  const handleDeleteReservation = async (reservationId: string, items: any[]) => {
+    // Delete all reservation items
+    await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
+    // Delete the reservation
+    await supabase.from('reservations').delete().eq('id', reservationId);
+    // Delete the reserved products
+    for (const item of items) {
+      if (item.product_id) {
+        await supabase.from('product_images').delete().eq('product_id', item.product_id);
+        await supabase.from('products').delete().eq('id', item.product_id);
+      }
+    }
+    toast.success('Broneering ja tooted kustutatud');
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+    queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
+  };
+
+  const handleReturnToSale = async (reservationId: string, items: any[]) => {
+    // Unreserve all products
+    for (const item of items) {
+      if (item.product_id) {
+        await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
+      }
+    }
+    // Delete reservation items and reservation
+    await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
+    await supabase.from('reservations').delete().eq('id', reservationId);
+    toast.success('Tooted tagasi müügis');
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
   };
 
   return (
@@ -252,6 +287,10 @@ const Admin = () => {
                     <Label>Hind (€)</Label>
                     <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
                   </div>
+                  <div>
+                    <Label>Soodushind (€)</Label>
+                    <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder="Jäta tühjaks kui pole" />
+                  </div>
                   <div className="sm:col-span-2">
                     <Label>Pildid</Label>
                     <AdminImageManager
@@ -281,9 +320,10 @@ const Admin = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {products.map((product) => {
+                {sortedProducts.map((product) => {
                   const thumbUrl = getProductImages(product.id);
                   const imgCount = allImages.filter((img) => img.product_id === product.id).length;
+                  const hasSale = product.sale_price != null && product.sale_price < product.price;
                   return (
                     <div key={product.id} className="bg-card p-4 rounded-lg border border-border flex gap-4 items-center">
                       <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
@@ -297,7 +337,16 @@ const Admin = () => {
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {product.category} · {product.price} € {imgCount > 1 && `· ${imgCount} pilti`}
+                          {product.category} · {hasSale ? (
+                            <>
+                              <span className="line-through">{product.price} €</span>
+                              {' '}
+                              <span className="text-destructive font-medium">{product.sale_price} €</span>
+                            </>
+                          ) : (
+                            <>{product.price} €</>
+                          )}
+                          {imgCount > 1 && ` · ${imgCount} pilti`}
                         </p>
                       </div>
                       <div className="flex gap-1">
@@ -309,9 +358,27 @@ const Admin = () => {
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
                           <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)} className="hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Kustuta toode?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Kas oled kindel, et soovid toote "{product.name}" kustutada? Seda toimingut ei saa tagasi võtta.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Tühista</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(product.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Kustuta
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   );
@@ -365,6 +432,37 @@ const Admin = () => {
                           <span className="text-sm font-medium">{item.product?.price} €</span>
                         </div>
                       ))}
+                    </div>
+                    <div className="flex gap-2 mt-4 pt-3 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => handleReturnToSale(res.id, res.items || [])}
+                      >
+                        <RotateCcw className="h-4 w-4" /> Tagasi müüki
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" /> Kustuta
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Kustuta broneering?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              See kustutab broneeringu JA kõik broneeritud tooted. Seda ei saa tagasi võtta.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Tühista</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteReservation(res.id, res.items || [])} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Kustuta
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 ))}

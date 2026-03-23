@@ -495,6 +495,7 @@ const Admin = () => {
                                   {item.product?.sale_price != null && item.product?.sale_price < item.product?.price
                                     ? item.product.sale_price : item.product?.price} €
                                 </span>
+                                {!isSingle && (
                                 <div className="flex gap-1">
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
@@ -539,6 +540,7 @@ const Admin = () => {
                                     </AlertDialogContent>
                                   </AlertDialog>
                                 </div>
+                                )}
                               </div>
                             ))}
                           </div>

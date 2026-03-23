@@ -1,15 +1,28 @@
 import { useState } from 'react';
 import { useProducts, useCategories } from '@/hooks/useProducts';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+
+const categoryTranslationKey: Record<string, keyof Translations> = {
+  'Mööbel': 'shop_cat_furniture',
+  'Valgustid': 'shop_cat_lighting',
+  'Varia': 'shop_cat_misc',
+  'Soodus -%': 'shop_cat_sale',
+};
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('Kõik');
   const { data: products = [], isLoading } = useProducts();
   const { data: categories = ['Kõik'] } = useCategories();
   const { t } = useLanguage();
+
+  const translateCategory = (cat: string) => {
+    if (cat === 'Kõik') return t.shop_all;
+    const key = categoryTranslationKey[cat];
+    return key ? t[key] : cat;
+  };
 
   const filteredProducts =
     selectedCategory === 'Kõik'

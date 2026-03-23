@@ -124,7 +124,7 @@ const AdminImageManager = ({ images, onChange }: AdminImageManagerProps) => {
       )}
 
       {images.length === 0 && (
-        <p className="text-sm text-muted-foreground">Lisa vähemalt üks pilt</p>
+        <p className="text-xs italic text-muted-foreground">Lisa vähemalt üks pilt</p>
       )}
     </div>
   );

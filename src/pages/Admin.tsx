@@ -171,7 +171,6 @@ const Admin = () => {
     });
     setEditingId(product.id);
     setShowForm(true);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   const handleDelete = async (id: string) => {

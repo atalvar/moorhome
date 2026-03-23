@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProducts } from '@/hooks/useProducts';
+import { useAllProductImages, ProductImage } from '@/hooks/useProductImages';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -10,24 +11,24 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { LogOut, Plus, Trash2, Edit2, Package, ClipboardList, Loader2, X, RotateCcw, Upload, ShieldAlert } from 'lucide-react';
+import { LogOut, Plus, Trash2, Edit2, Package, ClipboardList, Loader2, X, RotateCcw, ShieldAlert } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import AdminImageManager, { ImageItem } from '@/components/admin/AdminImageManager';
 
 interface ProductForm {
   name: string;
   category: string;
   description: string;
-  image: string;
   price: string;
+  images: ImageItem[];
 }
 
-const emptyForm: ProductForm = { name: '', category: '', description: '', image: '', price: '' };
+const emptyForm: ProductForm = { name: '', category: '', description: '', price: '', images: [] };
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
   const queryClient = useQueryClient();
 
-  // Check admin role
   const { data: isAdmin, isLoading: roleLoading } = useQuery({
     queryKey: ['admin-role', user?.id],
     queryFn: async () => {
@@ -39,13 +40,12 @@ const Admin = () => {
   });
 
   const { data: products = [], isLoading: productsLoading } = useProducts(true);
+  const { data: allImages = [] } = useAllProductImages();
 
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: reservations = [], isLoading: reservationsLoading } = useQuery({
     queryKey: ['reservations'],
@@ -54,9 +54,7 @@ const Admin = () => {
         .from('reservations')
         .select('*')
         .order('created_at', { ascending: false });
-
       if (!res) return [];
-
       const withItems = await Promise.all(
         res.map(async (r) => {
           const { data: items } = await supabase
@@ -94,76 +92,85 @@ const Admin = () => {
     );
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    const ext = file.name.split('.').pop();
-    const fileName = `${crypto.randomUUID()}.${ext}`;
-
-    const { error } = await supabase.storage
-      .from('product-images')
-      .upload(fileName, file);
-
-    if (error) {
-      toast.error('Pildi üleslaadimine ebaõnnestus');
-      setUploading(false);
-      return;
-    }
-
-    const { data: urlData } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(fileName);
-
-    setForm({ ...form, image: urlData.publicUrl });
-    setUploading(false);
-    toast.success('Pilt üles laetud');
+  const getProductImages = (productId: string): string => {
+    const imgs = allImages.filter((img) => img.product_id === productId);
+    if (imgs.length > 0) return imgs[0].image_url;
+    const product = products.find((p) => p.id === productId);
+    return product?.image || '/placeholder.svg';
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.images.length === 0) {
+      toast.error('Lisa vähemalt üks pilt');
+      return;
+    }
     setSaving(true);
 
     const productData = {
       name: form.name,
       category: form.category,
       description: form.description,
-      image: form.image,
+      image: form.images[0].image_url, // Main image stays in products table
       price: parseFloat(form.price),
     };
 
+    let productId = editingId;
+
     if (editingId) {
       const { error } = await supabase.from('products').update(productData).eq('id', editingId);
-      if (error) toast.error('Muutmine ebaõnnestus');
-      else toast.success('Toode uuendatud');
+      if (error) { toast.error('Muutmine ebaõnnestus'); setSaving(false); return; }
     } else {
-      const { error } = await supabase.from('products').insert(productData);
-      if (error) toast.error('Lisamine ebaõnnestus');
-      else toast.success('Toode lisatud');
+      const { data, error } = await supabase.from('products').insert(productData).select().single();
+      if (error || !data) { toast.error('Lisamine ebaõnnestus'); setSaving(false); return; }
+      productId = data.id;
     }
 
+    // Sync product_images
+    if (productId) {
+      // Delete existing images for this product
+      await supabase.from('product_images').delete().eq('product_id', productId);
+
+      // Insert all images
+      const imageRecords = form.images.map((img, i) => ({
+        product_id: productId!,
+        image_url: img.image_url,
+        sort_order: i,
+      }));
+      await supabase.from('product_images').insert(imageRecords);
+    }
+
+    toast.success(editingId ? 'Toode uuendatud' : 'Toode lisatud');
     setSaving(false);
     setForm(emptyForm);
     setEditingId(null);
     setShowForm(false);
     queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
+    queryClient.invalidateQueries({ queryKey: ['product-images'] });
   };
 
   const handleEdit = (product: any) => {
+    const productImgs = allImages
+      .filter((img) => img.product_id === product.id)
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((img) => ({ id: img.id, image_url: img.image_url, sort_order: img.sort_order }));
+
+    // If no extra images, use main image
+    const images = productImgs.length > 0 ? productImgs : [{ image_url: product.image, sort_order: 0 }];
+
     setForm({
       name: product.name,
       category: product.category,
       description: product.description,
-      image: product.image,
       price: String(product.price),
+      images,
     });
     setEditingId(product.id);
     setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
-    // Delete related reservation items first
     await supabase.from('reservation_items').delete().eq('product_id', id);
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) toast.error('Kustutamine ebaõnnestus');
@@ -171,14 +178,12 @@ const Admin = () => {
       toast.success('Toode kustutatud');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
+      queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
     }
   };
 
   const handleUnreserve = async (productId: string) => {
-    // Remove reservation items for this product
     await supabase.from('reservation_items').delete().eq('product_id', productId);
-
-    // Set product back to available
     const { error } = await supabase.from('products').update({ is_reserved: false }).eq('id', productId);
     if (error) {
       toast.error('Broneeringu tühistamine ebaõnnestus');
@@ -247,38 +252,12 @@ const Admin = () => {
                     <Label>Hind (€)</Label>
                     <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
                   </div>
-                  <div>
-                    <Label>Pilt</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={form.image}
-                        onChange={(e) => setForm({ ...form, image: e.target.value })}
-                        placeholder="URL või lae üles"
-                        required
-                        className="flex-1"
-                      />
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
-                      >
-                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                    {form.image && (
-                      <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden bg-muted border border-border">
-                        <img src={form.image} alt="Eelvaade" className="w-full h-full object-cover" />
-                      </div>
-                    )}
+                  <div className="sm:col-span-2">
+                    <Label>Pildid</Label>
+                    <AdminImageManager
+                      images={form.images}
+                      onChange={(images) => setForm({ ...form, images })}
+                    />
                   </div>
                   <div className="sm:col-span-2">
                     <Label>Kirjeldus</Label>
@@ -302,35 +281,41 @@ const Admin = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {products.map((product) => (
-                  <div key={product.id} className="bg-card p-4 rounded-lg border border-border flex gap-4 items-center">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-foreground">{product.name}</h3>
-                        {product.is_reserved && (
-                          <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">Broneeritud</span>
-                        )}
+                {products.map((product) => {
+                  const thumbUrl = getProductImages(product.id);
+                  const imgCount = allImages.filter((img) => img.product_id === product.id).length;
+                  return (
+                    <div key={product.id} className="bg-card p-4 rounded-lg border border-border flex gap-4 items-center">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                        <img src={thumbUrl} alt={product.name} className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-sm text-muted-foreground">{product.category} · {product.price} €</p>
-                    </div>
-                    <div className="flex gap-1">
-                      {product.is_reserved && (
-                        <Button variant="ghost" size="icon" onClick={() => handleUnreserve(product.id)} title="Tühista broneering">
-                          <RotateCcw className="h-4 w-4" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-foreground">{product.name}</h3>
+                          {product.is_reserved && (
+                            <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-full">Broneeritud</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {product.category} · {product.price} € {imgCount > 1 && `· ${imgCount} pilti`}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        {product.is_reserved && (
+                          <Button variant="ghost" size="icon" onClick={() => handleUnreserve(product.id)} title="Tühista broneering">
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
+                          <Edit2 className="h-4 w-4" />
                         </Button>
-                      )}
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(product)}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)} className="hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)} className="hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </TabsContent>
@@ -339,7 +324,6 @@ const Admin = () => {
             <h2 className="font-serif text-2xl font-semibold text-foreground mb-6">
               Broneeringud ({reservations.length})
             </h2>
-
             {reservationsLoading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

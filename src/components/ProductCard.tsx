@@ -1,5 +1,7 @@
 import { Product } from '@/contexts/ReservationContext';
 import { useReservation } from '@/contexts/ReservationContext';
+import { useProductImages } from '@/hooks/useProductImages';
+import ProductImageGallery from '@/components/ProductImageGallery';
 import { Button } from '@/components/ui/button';
 import { Calendar, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -10,6 +12,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToReservation, reservedItems } = useReservation();
+  const { data: extraImages = [] } = useProductImages(product.id);
 
   const isInReservation = reservedItems.some((item) => item.id === product.id);
 
@@ -18,15 +21,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
     toast.success(`${product.name} lisatud broneeringute nimekirja`);
   };
 
+  // Combine main image with extra images
+  const allImages = extraImages.length > 0
+    ? extraImages.map((img) => img.image_url)
+    : [product.image];
+
   return (
     <div className="group bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
-      <div className="aspect-square overflow-hidden bg-muted">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-      </div>
+      <ProductImageGallery images={allImages} alt={product.name} />
       <div className="p-4">
         <span className="text-xs font-medium text-secondary uppercase tracking-wide">
           {product.category}

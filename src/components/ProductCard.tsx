@@ -18,7 +18,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   const handleReserve = () => {
     addToReservation(product);
-    toast.success(`${product.name} lisatud broneeringute nimekirja`);
+    toast.success(`${product.name} lisatud broneeringute nimekirja`, {
+      duration: 4000,
+      style: { fontSize: '16px', padding: '16px' },
+    });
   };
 
   const allImages = extraImages.length > 0

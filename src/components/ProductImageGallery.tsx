@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -22,7 +21,7 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
     <>
       <div
         className="aspect-square overflow-hidden bg-muted cursor-pointer relative group"
-        onClick={() => setOpen(true)}
+        onClick={() => { setCurrentIndex(0); setOpen(true); }}
       >
         <img
           src={images[0]}
@@ -37,76 +36,74 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl p-0 border-none bg-transparent shadow-none [&>button]:hidden">
-          <div className="relative flex flex-col items-center">
+        <DialogContent className="max-w-3xl p-0 border-none bg-transparent shadow-none overflow-hidden [&>button]:hidden">
+          <div className="relative flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
             {/* Close button */}
             <button
               onClick={() => setOpen(false)}
-              className="absolute -top-2 -right-2 z-50 w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-lg hover:bg-muted transition-colors"
+              className="absolute top-3 right-3 z-50 w-9 h-9 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-background transition-colors border border-border"
             >
-              <X className="h-5 w-5 text-foreground" />
+              <X className="h-4 w-4 text-foreground" />
             </button>
 
-            {/* Product name */}
-            <div className="w-full text-center mb-3">
-              <h3 className="font-serif text-xl font-semibold text-card-foreground bg-card/90 backdrop-blur-sm inline-block px-6 py-2 rounded-full border border-border">
-                {alt}
-              </h3>
-            </div>
+            {/* Main image area */}
+            <div className="relative w-full bg-background/95 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl border border-border">
+              {/* Product name header */}
+              <div className="px-6 py-4 border-b border-border/50">
+                <h3 className="font-serif text-lg font-semibold text-foreground text-center">
+                  {alt}
+                </h3>
+              </div>
 
-            {/* Main image */}
-            <div className="relative w-full bg-card/95 backdrop-blur-sm rounded-2xl border border-border overflow-hidden shadow-2xl">
-              <img
-                src={images[currentIndex]}
-                alt={`${alt} ${currentIndex + 1}`}
-                className="w-full max-h-[70vh] object-contain p-4"
-              />
+              {/* Image */}
+              <div className="relative flex items-center justify-center bg-muted/30" style={{ minHeight: '300px', maxHeight: '60vh' }}>
+                <img
+                  src={images[currentIndex]}
+                  alt={`${alt} ${currentIndex + 1}`}
+                  className="w-full h-full object-contain"
+                  style={{ maxHeight: '60vh' }}
+                />
 
+                {images.length > 1 && (
+                  <>
+                    <button
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-md flex items-center justify-center transition-colors"
+                      onClick={() => goTo(currentIndex - 1)}
+                    >
+                      <ChevronLeft className="h-5 w-5 text-foreground" />
+                    </button>
+                    <button
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-md flex items-center justify-center transition-colors"
+                      onClick={() => goTo(currentIndex + 1)}
+                    >
+                      <ChevronRight className="h-5 w-5 text-foreground" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Thumbnails & counter */}
               {images.length > 1 && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card border border-border shadow-md h-10 w-10 rounded-full"
-                    onClick={(e) => { e.stopPropagation(); goTo(currentIndex - 1); }}
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card border border-border shadow-md h-10 w-10 rounded-full"
-                    onClick={(e) => { e.stopPropagation(); goTo(currentIndex + 1); }}
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </Button>
-                </>
-              )}
-
-              {/* Counter */}
-              {images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-foreground/60 text-background text-sm px-3 py-1 rounded-full">
-                  {currentIndex + 1} / {images.length}
+                <div className="px-4 py-3 border-t border-border/50 flex items-center justify-center gap-2">
+                  {images.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentIndex(i)}
+                      className={`w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
+                        i === currentIndex
+                          ? 'border-primary ring-2 ring-primary/30 scale-105'
+                          : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {currentIndex + 1}/{images.length}
+                  </span>
                 </div>
               )}
             </div>
-
-            {/* Thumbnails */}
-            {images.length > 1 && (
-              <div className="flex gap-2 mt-4 overflow-x-auto justify-center px-4">
-                {images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentIndex(i)}
-                    className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all shadow-md ${
-                      i === currentIndex ? 'border-primary ring-2 ring-primary/30 scale-110' : 'border-border opacity-60 hover:opacity-100'
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </DialogContent>
       </Dialog>

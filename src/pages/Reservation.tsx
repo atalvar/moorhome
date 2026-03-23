@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useReservation, DeliveryMethod, CustomerInfo } from '@/contexts/ReservationContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Trash2, Calendar, ArrowLeft, Truck, Store } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Trash2, Calendar, ArrowLeft, Truck, Store, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Reservation = () => {
   const { reservedItems, removeFromReservation, updateDeliveryMethod, confirmReservation } = useReservation();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: '',
@@ -21,6 +23,7 @@ const Reservation = () => {
     address: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const needsAddress = reservedItems.some((item) => item.deliveryMethod === 'delivery');
 
@@ -37,16 +40,21 @@ const Reservation = () => {
     setIsSubmitting(false);
 
     if (success) {
-      toast.success('Broneering kinnitatud! Võtame teiega peagi ühendust.');
       setCustomerInfo({ name: '', email: '', phone: '', address: '' });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      setShowSuccess(true);
     } else {
       toast.error('Viga broneeringu tegemisel. Palun proovi uuesti.');
     }
   };
 
-  if (reservedItems.length === 0) {
+  const handleSuccessClose = () => {
+    setShowSuccess(false);
+    navigate('/pood');
+  };
+
+  if (reservedItems.length === 0 && !showSuccess) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-16 text-center">
@@ -68,6 +76,27 @@ const Reservation = () => {
             </Link>
           </div>
         </div>
+
+        {/* Success dialog - shown even when items are empty after confirmation */}
+        <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) handleSuccessClose(); }}>
+          <DialogContent className="max-w-md text-center">
+            <div className="flex flex-col items-center py-6">
+              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              </div>
+              <h2 className="font-serif text-2xl font-bold text-foreground mb-3">
+                Broneering kinnitatud!
+              </h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Täname teid! Oleme teie broneeringu kätte saanud ja võtame teiega <strong>24 tunni jooksul</strong> ühendust.
+              </p>
+              <Button onClick={handleSuccessClose} size="lg" className="w-full gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Tagasi poodi
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -100,7 +129,16 @@ const Reservation = () => {
                         <div>
                           <h3 className="font-serif font-semibold text-foreground">{item.name}</h3>
                           <p className="text-sm text-secondary">{item.category}</p>
-                          <p className="text-lg font-semibold text-foreground mt-1">{item.price} €</p>
+                          <p className="text-lg font-semibold text-foreground mt-1">
+                            {item.sale_price != null && item.sale_price < item.price ? (
+                              <>
+                                <span className="text-sm text-muted-foreground line-through mr-2">{item.price} €</span>
+                                <span className="text-destructive">{item.sale_price} €</span>
+                              </>
+                            ) : (
+                              <>{item.price} €</>
+                            )}
+                          </p>
                         </div>
                         <Button
                           variant="ghost"
@@ -177,6 +215,27 @@ const Reservation = () => {
           </div>
         </div>
       </section>
+
+      {/* Success dialog */}
+      <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) handleSuccessClose(); }}>
+        <DialogContent className="max-w-md text-center">
+          <div className="flex flex-col items-center py-6">
+            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
+              <CheckCircle2 className="h-12 w-12 text-green-600" />
+            </div>
+            <h2 className="font-serif text-2xl font-bold text-foreground mb-3">
+              Broneering kinnitatud!
+            </h2>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Täname teid! Oleme teie broneeringu kätte saanud ja võtame teiega <strong>24 tunni jooksul</strong> ühendust.
+            </p>
+            <Button onClick={handleSuccessClose} size="lg" className="w-full gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Tagasi poodi
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

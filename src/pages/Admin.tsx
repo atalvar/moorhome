@@ -434,14 +434,27 @@ const Admin = () => {
                       ))}
                     </div>
                     <div className="flex gap-2 mt-4 pt-3 border-t border-border">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() => handleReturnToSale(res.id, res.items || [])}
-                      >
-                        <RotateCcw className="h-4 w-4" /> Tagasi müüki
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="gap-2">
+                            <RotateCcw className="h-4 w-4" /> Tagasi müüki
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Pane tagasi müüki?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tooted muutuvad taas broneeritavaks ja broneering kustutatakse.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Tühista</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleReturnToSale(res.id, res.items || [])}>
+                              Tagasi müüki
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">

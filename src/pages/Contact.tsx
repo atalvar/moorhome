@@ -40,7 +40,7 @@ const Contact = () => {
               
               <div className="space-y-6">
                 {[
-                  { icon: MapPin, title: 'Aadress', lines: ['Vana-Posti 7', '10146 Tallinn, Eesti'] },
+                  { icon: MapPin, title: 'Aadress', lines: ['Keskväljak 10', '76607 Keila, Eesti'] },
                   { icon: Phone, title: 'Telefon', lines: ['+372 5123 4567'] },
                   { icon: Mail, title: 'E-post', lines: ['info@mooblimeister.ee'] },
                   { icon: Clock, title: 'Lahtiolekuajad', lines: ['E-R: 10:00 - 18:00', 'L: 10:00 - 15:00', 'P: Suletud'] },
@@ -62,7 +62,7 @@ const Contact = () => {
               {/* Map */}
               <div className="mt-8 rounded-2xl overflow-hidden border border-border/50 shadow-medium">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2028.9909259889473!2d24.74561221604489!3d59.43722198169!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4692949c8d6a8d9b%3A0x8b9b8b9b8b9b8b9b!2sVana-Posti%207%2C%20Tallinn!5e0!3m2!1set!2see!4v1620000000000!5m2!1set!2see"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2034.5!2d24.4155!3d59.3035!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4692f5c8e1234567%3A0x1234567890abcdef!2sKeskv%C3%A4ljak%2010%2C%2076607%20Keila!5e0!3m2!1set!2see!4v1620000000000!5m2!1set!2see"
                   width="100%"
                   height="250"
                   style={{ border: 0 }}

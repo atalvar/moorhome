@@ -14,7 +14,7 @@ export const useAuth = () => {
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     inactivityTimer.current = setTimeout(async () => {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
     }, INACTIVITY_TIMEOUT);
   }, []);
 

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface ProductImageGalleryProps {
@@ -16,6 +15,28 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
   const goTo = (index: number) => {
     setCurrentIndex((index + images.length) % images.length);
   };
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'ArrowLeft') goTo(currentIndex - 1);
+      if (e.key === 'ArrowRight') goTo(currentIndex + 1);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open, currentIndex]);
+
+  // Prevent body scroll when open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
 
   return (
     <>
@@ -35,63 +56,72 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
         )}
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 border-none bg-transparent shadow-none overflow-visible [&>button]:hidden flex items-center justify-center">
-          <div className="relative flex items-center justify-center w-full h-full">
-            {/* Close button */}
-            <button
-              onClick={() => setOpen(false)}
-              className="absolute -top-5 -right-5 z-50 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors border border-border shadow-lg"
-            >
-              <X className="h-5 w-5 text-foreground" />
-            </button>
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          onClick={() => setOpen(false)}
+        >
+          {/* Dark overlay */}
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm" />
 
-            {/* Navigation arrows */}
-            {images.length > 1 && (
-              <>
-                <button
-                  className="absolute -left-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-lg flex items-center justify-center transition-colors z-50"
-                  onClick={() => goTo(currentIndex - 1)}
-                >
-                  <ChevronLeft className="h-5 w-5 text-foreground" />
-                </button>
-                <button
-                  className="absolute -right-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-lg flex items-center justify-center transition-colors z-50"
-                  onClick={() => goTo(currentIndex + 1)}
-                >
-                  <ChevronRight className="h-5 w-5 text-foreground" />
-                </button>
-              </>
-            )}
+          {/* Close button */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+            className="absolute top-5 right-5 z-50 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          >
+            <X className="h-5 w-5 text-white" />
+          </button>
 
-            {/* Image */}
+          {/* Navigation arrows */}
+          {images.length > 1 && (
+            <>
+              <button
+                className="absolute left-5 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                onClick={(e) => { e.stopPropagation(); goTo(currentIndex - 1); }}
+              >
+                <ChevronLeft className="h-6 w-6 text-white" />
+              </button>
+              <button
+                className="absolute right-5 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                onClick={(e) => { e.stopPropagation(); goTo(currentIndex + 1); }}
+              >
+                <ChevronRight className="h-6 w-6 text-white" />
+              </button>
+            </>
+          )}
+
+          {/* Image */}
+          <div className="relative z-10" onClick={(e) => e.stopPropagation()}>
             <img
               src={images[currentIndex]}
               alt={`${alt} ${currentIndex + 1}`}
-              className="max-w-[90vw] max-h-[90vh] object-contain"
+              className="max-w-[85vw] max-h-[80vh] object-contain rounded-lg shadow-2xl"
             />
-
-            {/* Thumbnail dots */}
-            {images.length > 1 && (
-              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full border border-border shadow-lg z-50">
-                {images.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentIndex(i)}
-                    className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
-                      i === currentIndex
-                        ? 'border-primary ring-2 ring-primary/30 scale-110'
-                        : 'border-transparent opacity-50 hover:opacity-100'
-                    }`}
-                  >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
-        </DialogContent>
-      </Dialog>
+
+          {/* Thumbnails */}
+          {images.length > 1 && (
+            <div
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {images.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentIndex(i)}
+                  className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
+                    i === currentIndex
+                      ? 'border-white scale-110 opacity-100'
+                      : 'border-transparent opacity-40 hover:opacity-80'
+                  }`}
+                >
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 };

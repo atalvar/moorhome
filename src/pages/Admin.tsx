@@ -267,7 +267,7 @@ const Admin = () => {
             </div>
 
             {showForm && (
-              <form onSubmit={handleSave} className="bg-card p-6 rounded-lg border border-border mb-6 animate-fade-in">
+              <form ref={formRef} onSubmit={handleSave} className="bg-card p-6 rounded-lg border border-border mb-6 animate-fade-in">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-serif text-lg font-semibold">
                     {editingId ? 'Muuda toodet' : 'Uus toode'}

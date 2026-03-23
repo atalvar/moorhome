@@ -363,7 +363,7 @@ const translations = {
   },
 } as const;
 
-export type Translations = typeof translations['et'];
+export type Translations = Record<keyof typeof translations['et'], string>;
 
 interface LanguageContextType {
   language: Language;

@@ -24,9 +24,7 @@ const Header = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-primary-foreground font-serif text-lg md:text-xl font-bold">M</span>
-            </div>
+            <img src={logo} alt="Moor Home logo" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover" />
             <div className="hidden sm:block">
               <h1 className="font-serif text-lg md:text-xl font-semibold text-foreground">Moor Home</h1>
               <p className="text-xs text-muted-foreground -mt-0.5">Restaureerimine & Müük</p>

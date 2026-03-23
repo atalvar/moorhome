@@ -26,6 +26,8 @@ const Reservation = () => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const needsAddress = deliveryMethod === 'delivery';
+  const itemCount = reservedItems.length;
+  const total = reservedItems.reduce((sum, item) => sum + (item.sale_price != null && item.sale_price < item.price ? item.sale_price : item.price), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

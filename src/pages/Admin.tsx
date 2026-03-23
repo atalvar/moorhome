@@ -476,7 +476,51 @@ const Admin = () => {
                               {item.delivery_method === 'delivery' ? '🚚 Kohaletoimetamine' : '🏪 Poest järgi'}
                             </span>
                           </div>
-                          <span className="text-sm font-medium">{item.product?.price} €</span>
+                          <span className="text-sm font-medium mr-2">{item.product?.price} €</span>
+                          <div className="flex gap-1">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" title="Tagasi müüki">
+                                  <RotateCcw className="h-3.5 w-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Pane "{item.product?.name}" tagasi müüki?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Toode muutub taas broneeritavaks.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Tühista</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleReturnItemToSale(res.id, item, res.items?.length || 0)}>
+                                    Tagasi müüki
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" title="Kustuta toode">
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Kustuta "{item.product?.name}"?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    See kustutab toote jäädavalt. Seda ei saa tagasi võtta.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Tühista</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteItem(res.id, item, res.items?.length || 0)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Kustuta
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -484,14 +528,14 @@ const Admin = () => {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm" className="gap-2">
-                            <RotateCcw className="h-4 w-4" /> Tagasi müüki
+                            <RotateCcw className="h-4 w-4" /> Kõik tagasi müüki
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Pane tagasi müüki?</AlertDialogTitle>
+                            <AlertDialogTitle>Pane kõik tagasi müüki?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Tooted muutuvad taas broneeritavaks ja broneering kustutatakse.
+                              Kõik tooted muutuvad taas broneeritavaks ja broneering kustutatakse.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -505,12 +549,12 @@ const Admin = () => {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" /> Kustuta
+                            <Trash2 className="h-4 w-4" /> Kustuta kõik
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Kustuta broneering?</AlertDialogTitle>
+                            <AlertDialogTitle>Kustuta kogu broneering?</AlertDialogTitle>
                             <AlertDialogDescription>
                               See kustutab broneeringu JA kõik broneeritud tooted. Seda ei saa tagasi võtta.
                             </AlertDialogDescription>

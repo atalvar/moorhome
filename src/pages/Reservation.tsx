@@ -12,7 +12,7 @@ import { Trash2, Calendar, ArrowLeft, Truck, Store, CheckCircle2 } from 'lucide-
 import { toast } from 'sonner';
 
 const Reservation = () => {
-  const { reservedItems, removeFromReservation, updateDeliveryMethod, confirmReservation } = useReservation();
+  const { reservedItems, removeFromReservation, deliveryMethod, setDeliveryMethod, confirmReservation } = useReservation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -25,7 +25,7 @@ const Reservation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const needsAddress = reservedItems.some((item) => item.deliveryMethod === 'delivery');
+  const needsAddress = deliveryMethod === 'delivery';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +77,6 @@ const Reservation = () => {
           </div>
         </div>
 
-        {/* Success dialog - shown even when items are empty after confirmation */}
         <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) handleSuccessClose(); }}>
           <DialogContent className="max-w-md text-center">
             <div className="flex flex-col items-center py-6">
@@ -118,6 +117,29 @@ const Reservation = () => {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
+              {/* Delivery method - once for all items */}
+              <div className="bg-card p-5 rounded-lg border border-border">
+                <p className="text-sm font-medium text-foreground mb-3">Kättetoimetamise viis kõigile toodetele:</p>
+                <RadioGroup
+                  value={deliveryMethod}
+                  onValueChange={(value) => setDeliveryMethod(value as DeliveryMethod)}
+                  className="flex gap-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pickup" id="pickup-all" />
+                    <Label htmlFor="pickup-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
+                      <Store className="h-4 w-4" /> Tulen poodi järgi
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="delivery" id="delivery-all" />
+                    <Label htmlFor="delivery-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
+                      <Truck className="h-4 w-4" /> Kohaletoimetamine
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
               {reservedItems.map((item) => (
                 <div key={item.id} className="bg-card p-4 rounded-lg border border-border animate-fade-in">
                   <div className="flex gap-4">
@@ -148,27 +170,6 @@ const Reservation = () => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                      </div>
-                      <div className="mt-4">
-                        <p className="text-sm font-medium text-foreground mb-2">Kättetoimetamine:</p>
-                        <RadioGroup
-                          value={item.deliveryMethod}
-                          onValueChange={(value) => updateDeliveryMethod(item.id, value as DeliveryMethod)}
-                          className="flex gap-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="pickup" id={`pickup-${item.id}`} />
-                            <Label htmlFor={`pickup-${item.id}`} className="flex items-center gap-1 text-sm cursor-pointer">
-                              <Store className="h-4 w-4" /> Tulen poodi järgi
-                            </Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="delivery" id={`delivery-${item.id}`} />
-                            <Label htmlFor={`delivery-${item.id}`} className="flex items-center gap-1 text-sm cursor-pointer">
-                              <Truck className="h-4 w-4" /> Kohaletoimetamine
-                            </Label>
-                          </div>
-                        </RadioGroup>
                       </div>
                     </div>
                   </div>
@@ -216,7 +217,6 @@ const Reservation = () => {
         </div>
       </section>
 
-      {/* Success dialog */}
       <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) handleSuccessClose(); }}>
         <DialogContent className="max-w-md text-center">
           <div className="flex flex-col items-center py-6">

@@ -237,16 +237,14 @@ const Admin = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="products">
-          <div className="border-b border-border bg-muted/30 -mx-4 px-4 mb-6">
-            <TabsList className="bg-transparent h-auto p-0 gap-4">
-              <TabsTrigger value="products" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-1 pb-3 pt-3">
-                <Package className="h-4 w-4" /> Tooted
-              </TabsTrigger>
-              <TabsTrigger value="reservations" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-1 pb-3 pt-3">
-                <ClipboardList className="h-4 w-4" /> Broneeringud
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <TabsList className="mb-6">
+            <TabsTrigger value="products" className="gap-2">
+              <Package className="h-4 w-4" /> Tooted
+            </TabsTrigger>
+            <TabsTrigger value="reservations" className="gap-2">
+              <ClipboardList className="h-4 w-4" /> Broneeringud
+            </TabsTrigger>
+          </TabsList>
 
           <TabsContent value="products">
             <div className="flex justify-between items-center mb-6">

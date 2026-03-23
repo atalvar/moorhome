@@ -19,8 +19,8 @@ const Index = () => {
             alt=""
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-background/75 glass" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50" />
+          <div className="absolute inset-0 bg-background/50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/50 to-transparent" />
         </div>
 
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">

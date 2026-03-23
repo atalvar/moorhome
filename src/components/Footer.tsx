@@ -54,7 +54,7 @@ const Footer = () => {
               {[
                 { icon: Phone, text: "+372 5123 4567" },
                 { icon: Mail, text: "info@mooblimeister.ee" },
-                { icon: MapPin, text: "Vana-Posti 7, Tallinn" },
+                { icon: MapPin, text: "Keskväljak 10, Keila" },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm text-primary-foreground/70">
                   <item.icon className="h-4 w-4 flex-shrink-0" />

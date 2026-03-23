@@ -35,12 +35,13 @@ interface ReservationContextType {
 const ReservationContext = createContext<ReservationContextType | undefined>(undefined);
 
 export const ReservationProvider = ({ children }: { children: ReactNode }) => {
-  const [reservedItems, setReservedItems] = useState<ReservationItem[]>([]);
+  const [reservedItems, setReservedItems] = useState<Product[]>([]);
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('pickup');
 
   const addToReservation = (product: Product) => {
     setReservedItems((prev) => {
       if (prev.find((item) => item.id === product.id)) return prev;
-      return [...prev, { ...product, deliveryMethod: 'pickup' }];
+      return [...prev, product];
     });
   };
 
@@ -48,20 +49,15 @@ export const ReservationProvider = ({ children }: { children: ReactNode }) => {
     setReservedItems((prev) => prev.filter((item) => item.id !== productId));
   };
 
-  const updateDeliveryMethod = (productId: string, method: DeliveryMethod) => {
-    setReservedItems((prev) =>
-      prev.map((item) =>
-        item.id === productId ? { ...item, deliveryMethod: method } : item
-      )
-    );
+  const clearReservation = () => {
+    setReservedItems([]);
+    setDeliveryMethod('pickup');
   };
-
-  const clearReservation = () => setReservedItems([]);
 
   const confirmReservation = async (customerInfo: CustomerInfo): Promise<boolean> => {
     const items = reservedItems.map((item) => ({
       product_id: item.id,
-      delivery_method: item.deliveryMethod,
+      delivery_method: deliveryMethod,
     }));
 
     const { data, error } = await supabase.functions.invoke('create-reservation', {
@@ -77,6 +73,7 @@ export const ReservationProvider = ({ children }: { children: ReactNode }) => {
     if (error || data?.error) return false;
 
     setReservedItems([]);
+    setDeliveryMethod('pickup');
     return true;
   };
 
@@ -86,9 +83,10 @@ export const ReservationProvider = ({ children }: { children: ReactNode }) => {
     <ReservationContext.Provider
       value={{
         reservedItems,
+        deliveryMethod,
+        setDeliveryMethod,
         addToReservation,
         removeFromReservation,
-        updateDeliveryMethod,
         clearReservation,
         confirmReservation,
         totalItems,

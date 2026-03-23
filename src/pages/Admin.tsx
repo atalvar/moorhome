@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProducts } from '@/hooks/useProducts';
@@ -48,6 +48,7 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const { data: reservations = [], isLoading: reservationsLoading } = useQuery({
     queryKey: ['reservations'],
@@ -170,6 +171,7 @@ const Admin = () => {
     });
     setEditingId(product.id);
     setShowForm(true);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   const handleDelete = async (id: string) => {
@@ -265,7 +267,7 @@ const Admin = () => {
             </div>
 
             {showForm && (
-              <form onSubmit={handleSave} className="bg-card p-6 rounded-lg border border-border mb-6 animate-fade-in">
+              <form ref={formRef} onSubmit={handleSave} className="bg-card p-6 rounded-lg border border-border mb-6 animate-fade-in">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-serif text-lg font-semibold">
                     {editingId ? 'Muuda toodet' : 'Uus toode'}

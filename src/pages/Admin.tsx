@@ -448,52 +448,117 @@ const Admin = () => {
               <div className="space-y-4">
                 {reservations.map((res: any) => (
                   <div key={res.id} className="bg-card p-5 rounded-lg border border-border">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                      <div>
-                        <h3 className="font-medium text-foreground">{res.customer_name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {res.customer_email} · {res.customer_phone}
-                        </p>
-                        {res.customer_address && (
-                          <p className="text-sm text-muted-foreground">📍 {res.customer_address}</p>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(res.created_at).toLocaleDateString('et-EE', {
-                          day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {res.items?.map((item: any) => (
-                        <div key={item.id} className="flex items-center gap-3 bg-muted/50 p-2 rounded">
-                          <div className="w-10 h-10 rounded overflow-hidden bg-muted">
-                            <img src={item.product?.image} alt={item.product?.name} className="w-full h-full object-cover" />
+                    {(() => {
+                      const itemCount = res.items?.length || 0;
+                      const isSingle = itemCount === 1;
+                      const resTotal = (res.items || []).reduce((sum: number, it: any) => {
+                        const p = it.product;
+                        if (!p) return sum;
+                        return sum + (p.sale_price != null && p.sale_price < p.price ? p.sale_price : p.price);
+                      }, 0);
+                      return (
+                        <>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                            <div>
+                              <h3 className="font-medium text-foreground">{res.customer_name}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {res.customer_email} · {res.customer_phone}
+                              </p>
+                              {res.customer_address && (
+                                <p className="text-sm text-muted-foreground">📍 {res.customer_address}</p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xs text-muted-foreground block">
+                                {new Date(res.created_at).toLocaleDateString('et-EE', {
+                                  day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                })}
+                              </span>
+                              <span className="text-sm font-semibold text-foreground">
+                                {itemCount} {isSingle ? 'toode' : 'toodet'} · Kokku: {resTotal} €
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <span className="text-sm font-medium">{item.product?.name}</span>
-                            <span className="text-xs text-muted-foreground ml-2">
-                              {item.delivery_method === 'delivery' ? '🚚 Kohaletoimetamine' : '🏪 Poest järgi'}
-                            </span>
+                          <div className="space-y-2">
+                            {res.items?.map((item: any) => (
+                              <div key={item.id} className="flex items-center gap-3 bg-muted/50 p-2 rounded">
+                                <div className="w-10 h-10 rounded overflow-hidden bg-muted">
+                                  <img src={item.product?.image} alt={item.product?.name} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex-1">
+                                  <span className="text-sm font-medium">{item.product?.name}</span>
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {item.delivery_method === 'delivery' ? '🚚 Kohaletoimetamine' : '🏪 Poest järgi'}
+                                  </span>
+                                </div>
+                                <span className="text-sm font-medium mr-2">
+                                  {item.product?.sale_price != null && item.product?.sale_price < item.product?.price
+                                    ? item.product.sale_price : item.product?.price} €
+                                </span>
+                                <div className="flex gap-1">
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8" title="Tagasi müüki">
+                                        <RotateCcw className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Pane "{item.product?.name}" tagasi müüki?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Toode muutub taas broneeritavaks.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Tühista</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleReturnItemToSale(res.id, item, itemCount)}>
+                                          Tagasi müüki
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" title="Kustuta toode">
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Kustuta "{item.product?.name}"?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          See kustutab toote jäädavalt. Seda ei saa tagasi võtta.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Tühista</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteItem(res.id, item, itemCount)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                          Kustuta
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          <span className="text-sm font-medium mr-2">{item.product?.price} €</span>
-                          <div className="flex gap-1">
+                          <div className="flex gap-2 mt-4 pt-3 border-t border-border">
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" title="Tagasi müüki">
-                                  <RotateCcw className="h-3.5 w-3.5" />
+                                <Button variant="outline" size="sm" className="gap-2">
+                                  <RotateCcw className="h-4 w-4" /> {isSingle ? 'Tagasi müüki' : 'Kõik tagasi müüki'}
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Pane "{item.product?.name}" tagasi müüki?</AlertDialogTitle>
+                                  <AlertDialogTitle>{isSingle ? 'Pane tagasi müüki?' : 'Pane kõik tagasi müüki?'}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Toode muutub taas broneeritavaks.
+                                    {isSingle ? 'Toode muutub taas broneeritavaks ja broneering kustutatakse.' : 'Kõik tooted muutuvad taas broneeritavaks ja broneering kustutatakse.'}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Tühista</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleReturnItemToSale(res.id, item, res.items?.length || 0)}>
+                                  <AlertDialogAction onClick={() => handleReturnToSale(res.id, res.items || [])}>
                                     Tagasi müüki
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -501,73 +566,31 @@ const Admin = () => {
                             </AlertDialog>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" title="Kustuta toode">
-                                  <Trash2 className="h-3.5 w-3.5" />
+                                <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
+                                  <Trash2 className="h-4 w-4" /> {isSingle ? 'Kustuta' : 'Kustuta kõik'}
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Kustuta "{item.product?.name}"?</AlertDialogTitle>
+                                  <AlertDialogTitle>{isSingle ? 'Kustuta broneering?' : 'Kustuta kogu broneering?'}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    See kustutab toote jäädavalt. Seda ei saa tagasi võtta.
+                                    {isSingle
+                                      ? 'See kustutab broneeringu ja toote jäädavalt. Seda ei saa tagasi võtta.'
+                                      : 'See kustutab broneeringu JA kõik broneeritud tooted. Seda ei saa tagasi võtta.'}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Tühista</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleDeleteItem(res.id, item, res.items?.length || 0)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  <AlertDialogAction onClick={() => handleDeleteReservation(res.id, res.items || [])} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                     Kustuta
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex gap-2 mt-4 pt-3 border-t border-border">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="gap-2">
-                            <RotateCcw className="h-4 w-4" /> Kõik tagasi müüki
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Pane kõik tagasi müüki?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Kõik tooted muutuvad taas broneeritavaks ja broneering kustutatakse.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Tühista</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleReturnToSale(res.id, res.items || [])}>
-                              Tagasi müüki
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" /> Kustuta kõik
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Kustuta kogu broneering?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              See kustutab broneeringu JA kõik broneeritud tooted. Seda ei saa tagasi võtta.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Tühista</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDeleteReservation(res.id, res.items || [])} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              Kustuta
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>

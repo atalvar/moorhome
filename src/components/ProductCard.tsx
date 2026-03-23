@@ -1,11 +1,18 @@
 import { Product } from '@/contexts/ReservationContext';
 import { useReservation } from '@/contexts/ReservationContext';
 import { useProductImages } from '@/hooks/useProductImages';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Check } from 'lucide-react';
 import { toast } from 'sonner';
+
+const categoryTranslationKey: Record<string, keyof Translations> = {
+  'Mööbel': 'shop_cat_furniture',
+  'Valgustid': 'shop_cat_lighting',
+  'Varia': 'shop_cat_misc',
+  'Soodus -%': 'shop_cat_sale',
+};
 
 interface ProductCardProps {
   product: Product;

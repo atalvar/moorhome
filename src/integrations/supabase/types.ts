@@ -56,6 +56,7 @@ export type Database = {
           is_reserved: boolean
           name: string
           price: number
+          sale_price: number | null
         }
         Insert: {
           category: string
@@ -66,6 +67,7 @@ export type Database = {
           is_reserved?: boolean
           name: string
           price: number
+          sale_price?: number | null
         }
         Update: {
           category?: string
@@ -76,6 +78,7 @@ export type Database = {
           is_reserved?: boolean
           name?: string
           price?: number
+          sale_price?: number | null
         }
         Relationships: []
       }

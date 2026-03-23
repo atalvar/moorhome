@@ -21,10 +21,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
     toast.success(`${product.name} lisatud broneeringute nimekirja`);
   };
 
-  // Combine main image with extra images
   const allImages = extraImages.length > 0
     ? extraImages.map((img) => img.image_url)
     : [product.image];
+
+  const hasSalePrice = product.sale_price != null && product.sale_price < product.price;
 
   return (
     <div className="group bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
@@ -40,9 +41,22 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {product.description}
         </p>
         <div className="flex items-center justify-between mt-4">
-          <span className="text-xl font-semibold text-foreground">
-            {product.price} €
-          </span>
+          <div className="flex items-center gap-2">
+            {hasSalePrice ? (
+              <>
+                <span className="text-sm text-muted-foreground line-through">
+                  {product.price} €
+                </span>
+                <span className="text-xl font-semibold text-destructive">
+                  {product.sale_price} €
+                </span>
+              </>
+            ) : (
+              <span className="text-xl font-semibold text-foreground">
+                {product.price} €
+              </span>
+            )}
+          </div>
           {isInReservation ? (
             <Button size="sm" variant="outline" disabled className="gap-2">
               <Check className="h-4 w-4" />

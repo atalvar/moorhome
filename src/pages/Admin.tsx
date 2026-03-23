@@ -189,11 +189,8 @@ const Admin = () => {
 
 
   const handleDeleteReservation = async (reservationId: string, items: any[]) => {
-    // Delete all reservation items
     await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
-    // Delete the reservation
     await supabase.from('reservations').delete().eq('id', reservationId);
-    // Delete the reserved products
     for (const item of items) {
       if (item.product_id) {
         await supabase.from('product_images').delete().eq('product_id', item.product_id);
@@ -207,18 +204,44 @@ const Admin = () => {
   };
 
   const handleReturnToSale = async (reservationId: string, items: any[]) => {
-    // Unreserve all products
     for (const item of items) {
       if (item.product_id) {
         await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
       }
     }
-    // Delete reservation items and reservation
     await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
     await supabase.from('reservations').delete().eq('id', reservationId);
     toast.success('Tooted tagasi müügis');
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['reservations'] });
+  };
+
+  const handleReturnItemToSale = async (reservationId: string, item: any, totalItems: number) => {
+    if (item.product_id) {
+      await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
+    }
+    await supabase.from('reservation_items').delete().eq('id', item.id);
+    if (totalItems <= 1) {
+      await supabase.from('reservations').delete().eq('id', reservationId);
+    }
+    toast.success(`${item.product?.name || 'Toode'} tagasi müügis`);
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+  };
+
+  const handleDeleteItem = async (reservationId: string, item: any, totalItems: number) => {
+    await supabase.from('reservation_items').delete().eq('id', item.id);
+    if (item.product_id) {
+      await supabase.from('product_images').delete().eq('product_id', item.product_id);
+      await supabase.from('products').delete().eq('id', item.product_id);
+    }
+    if (totalItems <= 1) {
+      await supabase.from('reservations').delete().eq('id', reservationId);
+    }
+    toast.success(`${item.product?.name || 'Toode'} kustutatud`);
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+    queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
   };
 
   return (

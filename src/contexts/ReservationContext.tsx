@@ -14,10 +14,6 @@ export interface Product {
 
 export type DeliveryMethod = 'pickup' | 'delivery';
 
-export interface ReservationItem extends Product {
-  deliveryMethod: DeliveryMethod;
-}
-
 export interface CustomerInfo {
   name: string;
   email: string;

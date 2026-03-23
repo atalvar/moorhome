@@ -1,12 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Menu, X } from "lucide-react";
+import { Calendar, Menu, X, Shield } from "lucide-react";
 import { useReservation } from "@/contexts/ReservationContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
 const Header = () => {
   const { totalItems } = useReservation();
+  const { user } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -14,6 +16,7 @@ const Header = () => {
     { path: "/", label: "Avaleht" },
     { path: "/pood", label: "Pood" },
     { path: "/kontakt", label: "Kontakt" },
+    ...(user ? [{ path: "/admin", label: "Admin" }] : []),
   ];
 
   const isActive = (path: string) => location.pathname === path;

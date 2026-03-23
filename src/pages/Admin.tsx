@@ -189,11 +189,8 @@ const Admin = () => {
 
 
   const handleDeleteReservation = async (reservationId: string, items: any[]) => {
-    // Delete all reservation items
     await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
-    // Delete the reservation
     await supabase.from('reservations').delete().eq('id', reservationId);
-    // Delete the reserved products
     for (const item of items) {
       if (item.product_id) {
         await supabase.from('product_images').delete().eq('product_id', item.product_id);
@@ -207,18 +204,44 @@ const Admin = () => {
   };
 
   const handleReturnToSale = async (reservationId: string, items: any[]) => {
-    // Unreserve all products
     for (const item of items) {
       if (item.product_id) {
         await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
       }
     }
-    // Delete reservation items and reservation
     await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
     await supabase.from('reservations').delete().eq('id', reservationId);
     toast.success('Tooted tagasi müügis');
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['reservations'] });
+  };
+
+  const handleReturnItemToSale = async (reservationId: string, item: any, totalItems: number) => {
+    if (item.product_id) {
+      await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
+    }
+    await supabase.from('reservation_items').delete().eq('id', item.id);
+    if (totalItems <= 1) {
+      await supabase.from('reservations').delete().eq('id', reservationId);
+    }
+    toast.success(`${item.product?.name || 'Toode'} tagasi müügis`);
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+  };
+
+  const handleDeleteItem = async (reservationId: string, item: any, totalItems: number) => {
+    await supabase.from('reservation_items').delete().eq('id', item.id);
+    if (item.product_id) {
+      await supabase.from('product_images').delete().eq('product_id', item.product_id);
+      await supabase.from('products').delete().eq('id', item.product_id);
+    }
+    if (totalItems <= 1) {
+      await supabase.from('reservations').delete().eq('id', reservationId);
+    }
+    toast.success(`${item.product?.name || 'Toode'} kustutatud`);
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+    queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
   };
 
   return (
@@ -453,7 +476,51 @@ const Admin = () => {
                               {item.delivery_method === 'delivery' ? '🚚 Kohaletoimetamine' : '🏪 Poest järgi'}
                             </span>
                           </div>
-                          <span className="text-sm font-medium">{item.product?.price} €</span>
+                          <span className="text-sm font-medium mr-2">{item.product?.price} €</span>
+                          <div className="flex gap-1">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" title="Tagasi müüki">
+                                  <RotateCcw className="h-3.5 w-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Pane "{item.product?.name}" tagasi müüki?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Toode muutub taas broneeritavaks.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Tühista</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleReturnItemToSale(res.id, item, res.items?.length || 0)}>
+                                    Tagasi müüki
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" title="Kustuta toode">
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Kustuta "{item.product?.name}"?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    See kustutab toote jäädavalt. Seda ei saa tagasi võtta.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Tühista</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteItem(res.id, item, res.items?.length || 0)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Kustuta
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -461,14 +528,14 @@ const Admin = () => {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm" className="gap-2">
-                            <RotateCcw className="h-4 w-4" /> Tagasi müüki
+                            <RotateCcw className="h-4 w-4" /> Kõik tagasi müüki
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Pane tagasi müüki?</AlertDialogTitle>
+                            <AlertDialogTitle>Pane kõik tagasi müüki?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Tooted muutuvad taas broneeritavaks ja broneering kustutatakse.
+                              Kõik tooted muutuvad taas broneeritavaks ja broneering kustutatakse.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -482,12 +549,12 @@ const Admin = () => {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" /> Kustuta
+                            <Trash2 className="h-4 w-4" /> Kustuta kõik
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Kustuta broneering?</AlertDialogTitle>
+                            <AlertDialogTitle>Kustuta kogu broneering?</AlertDialogTitle>
                             <AlertDialogDescription>
                               See kustutab broneeringu JA kõik broneeritud tooted. Seda ei saa tagasi võtta.
                             </AlertDialogDescription>

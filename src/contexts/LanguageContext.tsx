@@ -47,6 +47,10 @@ const translations = {
     shop_title: "Meie Pood",
     shop_subtitle: "Sirvi meie hoolikalt restaureeritud mööblit. Iga ese on ainulaadne — osta endale sobiv!",
     shop_all: "Kõik",
+    shop_cat_furniture: "Mööbel",
+    shop_cat_lighting: "Valgustid",
+    shop_cat_misc: "Varia",
+    shop_cat_sale: "Soodus -%",
     shop_empty_all: "Kõik tooted on hetkel müüdud.",
     shop_empty_cat: "Selles kategoorias tooteid hetkel pole.",
 
@@ -226,6 +230,10 @@ const translations = {
     shop_title: "Our Shop",
     shop_subtitle: "Browse our carefully restored furniture. Each piece is unique — buy the one that suits you!",
     shop_all: "All",
+    shop_cat_furniture: "Furniture",
+    shop_cat_lighting: "Lighting",
+    shop_cat_misc: "Miscellaneous",
+    shop_cat_sale: "Sale -%",
     shop_empty_all: "All products are currently sold.",
     shop_empty_cat: "No products in this category at the moment.",
 

@@ -1,11 +1,18 @@
 import { Product } from '@/contexts/ReservationContext';
 import { useReservation } from '@/contexts/ReservationContext';
 import { useProductImages } from '@/hooks/useProductImages';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Check } from 'lucide-react';
+import { ShoppingCart, Check } from 'lucide-react';
 import { toast } from 'sonner';
+
+const categoryTranslationKey: Record<string, keyof Translations> = {
+  'Mööbel': 'shop_cat_furniture',
+  'Valgustid': 'shop_cat_lighting',
+  'Varia': 'shop_cat_misc',
+  'Soodus -%': 'shop_cat_sale',
+};
 
 interface ProductCardProps {
   product: Product;
@@ -37,7 +44,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <ProductImageGallery images={allImages} alt={product.name} />
       <div className="p-5">
         <span className="text-xs font-semibold text-secondary uppercase tracking-[0.15em]">
-          {product.category}
+          {categoryTranslationKey[product.category] ? t[categoryTranslationKey[product.category]] : product.category}
         </span>
         <h3 className="font-serif text-lg font-medium mt-1.5 text-foreground group-hover:text-primary transition-colors">
           {product.name}
@@ -69,7 +76,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </Button>
           ) : (
             <Button onClick={handleReserve} size="sm" className="gap-2 rounded-full gradient-warm border-0 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-300">
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingCart className="h-4 w-4" />
               {t.product_buy}
             </Button>
           )}

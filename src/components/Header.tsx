@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Menu, X, LogOut } from "lucide-react";
+import { ShoppingBag, Menu, X, LogOut } from "lucide-react";
 import { useReservation } from "@/contexts/ReservationContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -56,25 +56,27 @@ const Header = () => {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {/* Language switcher */}
-            <div className="flex rounded-full border border-border overflow-hidden">
-              <button
-                onClick={() => setLanguage('et')}
-                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
-                  language === 'et' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                ET
-              </button>
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
-                  language === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                EN
-              </button>
-            </div>
+            {/* Language switcher - hidden for admin */}
+            {!user && (
+              <div className="flex rounded-full border border-border overflow-hidden">
+                <button
+                  onClick={() => setLanguage('et')}
+                  className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                    language === 'et' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  ET
+                </button>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                    language === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
+            )}
 
             {user && (
               <div className="hidden md:flex items-center gap-2">
@@ -88,7 +90,7 @@ const Header = () => {
             {totalItems > 0 && (
               <Link to="/broneering">
                 <Button variant="ghost" size="icon" className="relative animate-fade-in">
-                  <Calendar className="h-5 w-5" />
+                  <ShoppingBag className="h-5 w-5" />
                   <span className="absolute -top-1 -right-1 gradient-warm text-primary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium shadow-soft">
                     {totalItems}
                   </span>

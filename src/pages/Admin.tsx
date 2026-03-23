@@ -223,28 +223,24 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 flex items-center justify-between h-16">
-          <h1 className="font-serif text-xl font-bold text-foreground">Admin paneel</h1>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
-            <Button variant="ghost" size="sm" onClick={signOut} className="gap-2">
-              <LogOut className="h-4 w-4" /> Logi välja
-            </Button>
-          </div>
-        </div>
-      </div>
-
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="products">
-          <TabsList className="mb-6">
-            <TabsTrigger value="products" className="gap-2">
-              <Package className="h-4 w-4" /> Tooted
-            </TabsTrigger>
-            <TabsTrigger value="reservations" className="gap-2">
-              <ClipboardList className="h-4 w-4" /> Broneeringud
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between mb-6">
+            <TabsList>
+              <TabsTrigger value="products" className="gap-2">
+                <Package className="h-4 w-4" /> Tooted
+              </TabsTrigger>
+              <TabsTrigger value="reservations" className="gap-2">
+                <ClipboardList className="h-4 w-4" /> Broneeringud
+              </TabsTrigger>
+            </TabsList>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
+              <Button variant="ghost" size="sm" onClick={signOut} className="gap-2">
+                <LogOut className="h-4 w-4" /> Logi välja
+              </Button>
+            </div>
+          </div>
 
           <TabsContent value="products">
             <div className="flex justify-between items-center mb-6">

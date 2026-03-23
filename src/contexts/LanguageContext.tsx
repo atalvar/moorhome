@@ -95,7 +95,7 @@ const translations = {
     order_address: 'Kohaletoimetamise aadress *',
     order_address_placeholder: 'Täisaadress koos postiindeksiga',
     order_total: 'Kokku',
-    order_after: 'Pärast tellimuse kinnitamist võtame teiega 24h jooksul ühendust.',
+    order_after: 'Arve saadetakse Teie e-postile pärast tellimuse kinnitamist.',
     order_confirming: 'Kinnitamine...',
     order_confirm_btn: 'Kinnita tellimus',
     order_continue: 'Jätka sirvimist',

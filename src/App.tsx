@@ -37,12 +37,12 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
-              <Route path="/pood" element={<PublicLayout><Shop /></PublicLayout>} />
-              <Route path="/kontakt" element={<PublicLayout><Contact /></PublicLayout>} />
-              <Route path="/broneering" element={<PublicLayout><Reservation /></PublicLayout>} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<PublicLayout><Admin /></PublicLayout>} />
-              <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+              <Route path="/pood" element={<Suspense fallback={null}><PublicLayout><Shop /></PublicLayout></Suspense>} />
+              <Route path="/kontakt" element={<Suspense fallback={null}><PublicLayout><Contact /></PublicLayout></Suspense>} />
+              <Route path="/broneering" element={<Suspense fallback={null}><PublicLayout><Reservation /></PublicLayout></Suspense>} />
+              <Route path="/admin/login" element={<Suspense fallback={null}><AdminLogin /></Suspense>} />
+              <Route path="/admin" element={<Suspense fallback={null}><PublicLayout><Admin /></PublicLayout></Suspense>} />
+              <Route path="*" element={<Suspense fallback={null}><PublicLayout><NotFound /></PublicLayout></Suspense>} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>

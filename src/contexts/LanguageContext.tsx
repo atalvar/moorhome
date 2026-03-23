@@ -259,7 +259,7 @@ const translations = {
     order_empty_subtitle: 'Browse our shop and buy your favorite restored furniture.',
     order_go_shop: 'Go to shop',
     order_confirmed: 'Order confirmed!',
-    order_confirmed_msg: 'Thank you! We have received your order and will contact you within <strong>24 hours</strong>.',
+    order_confirmed_msg: 'Thank you! An invoice will be sent to your email once we have received your order!',
     order_back_shop: 'Back to shop',
     order_items_in: 'in cart',
     order_product: 'product',

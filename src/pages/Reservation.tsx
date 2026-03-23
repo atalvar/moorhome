@@ -26,6 +26,8 @@ const Reservation = () => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const needsAddress = deliveryMethod === 'delivery';
+  const itemCount = reservedItems.length;
+  const total = reservedItems.reduce((sum, item) => sum + (item.sale_price != null && item.sale_price < item.price ? item.sale_price : item.price), 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +110,7 @@ const Reservation = () => {
             Broneering
           </h1>
           <p className="text-muted-foreground mt-4">
-            {reservedItems.length} {reservedItems.length === 1 ? 'ese' : 'eset'} broneeringu nimekirjas
+            {itemCount} {itemCount === 1 ? 'toode' : 'toodet'} broneeringu nimekirjas
           </p>
         </div>
       </section>
@@ -201,9 +203,13 @@ const Reservation = () => {
                     </div>
                   )}
                   <div className="pt-4 border-t border-border">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground">{itemCount} {itemCount === 1 ? 'toode' : 'toodet'}</span>
+                      <span className="text-lg font-semibold text-foreground">{total} €</span>
+                    </div>
                     <p className="text-sm text-muted-foreground mb-4">Pärast broneeringu kinnitamist võtame teiega 24h jooksul ühendust.</p>
                     <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                      {isSubmitting ? 'Kinnitamine...' : 'Kinnita broneering'}
+                      {isSubmitting ? 'Kinnitamine...' : `Kinnita broneering (${total} €)`}
                     </Button>
                   </div>
                 </form>

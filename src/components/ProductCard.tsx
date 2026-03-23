@@ -4,7 +4,7 @@ import { useProductImages } from '@/hooks/useProductImages';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Check } from 'lucide-react';
+import { ShoppingCart, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProductCardProps {

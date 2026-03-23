@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Upload, Loader2, X, GripVertical } from 'lucide-react';
 
@@ -18,37 +17,36 @@ interface AdminImageManagerProps {
 
 const AdminImageManager = ({ images, onChange }: AdminImageManagerProps) => {
   const [uploading, setUploading] = useState(false);
-  const [urlInput, setUrlInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploading(true);
-    const ext = file.name.split('.').pop();
-    const fileName = `${crypto.randomUUID()}.${ext}`;
+    const newImages = [...images];
 
-    const { error } = await supabase.storage.from('product-images').upload(fileName, file);
-    if (error) {
-      toast.error('Pildi üleslaadimine ebaõnnestus');
-      setUploading(false);
-      return;
+    for (const file of Array.from(files)) {
+      const ext = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${ext}`;
+
+      const { error } = await supabase.storage.from('product-images').upload(fileName, file);
+      if (error) {
+        toast.error(`Pildi "${file.name}" üleslaadimine ebaõnnestus`);
+        continue;
+      }
+
+      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(fileName);
+      newImages.push({ image_url: urlData.publicUrl, sort_order: newImages.length });
     }
 
-    const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(fileName);
-    const newImages = [...images, { image_url: urlData.publicUrl, sort_order: images.length }];
     onChange(newImages);
     setUploading(false);
-    toast.success('Pilt üles laetud');
-  };
+    toast.success(files.length > 1 ? `${files.length} pilti üles laetud` : 'Pilt üles laetud');
 
-  const addUrl = () => {
-    if (!urlInput.trim()) return;
-    const newImages = [...images, { image_url: urlInput.trim(), sort_order: images.length }];
-    onChange(newImages);
-    setUrlInput('');
+    // Reset input so same files can be selected again
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removeImage = (index: number) => {
@@ -74,20 +72,24 @@ const AdminImageManager = ({ images, onChange }: AdminImageManagerProps) => {
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
-        <Input
-          value={urlInput}
-          onChange={(e) => setUrlInput(e.target.value)}
-          placeholder="Pildi URL"
-          className="flex-1"
-          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addUrl())}
+      <div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleUpload}
+          className="hidden"
         />
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
-        <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="gap-2 w-full"
+        >
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={addUrl} disabled={!urlInput.trim()}>
-          Lisa
+          {uploading ? 'Laen üles...' : 'Vali pildid'}
         </Button>
       </div>
 

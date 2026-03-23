@@ -80,7 +80,7 @@ const translations = {
     order_empty_subtitle: 'Sirvi meie poodi ja osta endale sobiv restaureeritud mööbel.',
     order_go_shop: 'Mine poodi',
     order_confirmed: 'Tellimus kinnitatud!',
-    order_confirmed_msg: 'Täname teid! Oleme teie tellimuse kätte saanud ja võtame teiega <strong>24 tunni jooksul</strong> ühendust.',
+    order_confirmed_msg: 'Aitäh! Arve saadetakse Teie poolt märgitud e-postile kui oleme tellimuse kätte saanud!',
     order_back_shop: 'Tagasi poodi',
     order_items_in: 'ostukorvis',
     order_product: 'toode',

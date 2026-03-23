@@ -67,15 +67,17 @@ export const ReservationProvider = ({ children }: { children: ReactNode }) => {
       delivery_method: item.deliveryMethod,
     }));
 
-    const { error } = await supabase.rpc('create_reservation', {
-      p_customer_name: customerInfo.name,
-      p_customer_email: customerInfo.email,
-      p_customer_phone: customerInfo.phone,
-      p_customer_address: customerInfo.address || null,
-      p_items: items,
+    const { data, error } = await supabase.functions.invoke('create-reservation', {
+      body: {
+        customer_name: customerInfo.name,
+        customer_email: customerInfo.email,
+        customer_phone: customerInfo.phone,
+        customer_address: customerInfo.address || null,
+        items,
+      },
     });
 
-    if (error) return false;
+    if (error || data?.error) return false;
 
     setReservedItems([]);
     return true;

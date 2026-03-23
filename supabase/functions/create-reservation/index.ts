@@ -6,24 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Simple in-memory rate limiter (per edge function instance)
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const RATE_LIMIT_MAX = 5; // max 5 reservations per minute per IP
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = (rateLimitMap.get(ip) || []).filter(
-    (t) => now - t < RATE_LIMIT_WINDOW_MS
-  );
-  if (timestamps.length >= RATE_LIMIT_MAX) {
-    rateLimitMap.set(ip, timestamps);
-    return true;
-  }
-  timestamps.push(now);
-  rateLimitMap.set(ip, timestamps);
-  return false;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -36,7 +18,18 @@ Deno.serve(async (req) => {
       req.headers.get("cf-connecting-ip") ||
       "unknown";
 
-    if (isRateLimited(ip)) {
+    // Use service role client for all DB operations
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // DB-based distributed rate limiting
+    const { data: isLimited, error: rlError } = await supabase.rpc("check_rate_limit", { p_ip: ip });
+    if (rlError) {
+      console.error("Rate limit check error:", rlError.message);
+    }
+    if (isLimited) {
       return new Response(
         JSON.stringify({ error: "Liiga palju päringuid. Proovi hiljem uuesti." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -54,11 +47,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Use service role to call the RPC (since anon no longer has EXECUTE)
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
 
     const { data, error } = await supabase.rpc("create_reservation", {
       p_customer_name: customer_name,
@@ -70,8 +58,23 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error("Reservation error:", error.message);
+      // Map known errors to safe user-facing messages
+      let safeMessage = "Tellimust ei saanud luua. Proovi uuesti.";
+      if (error.message.includes("already reserved")) {
+        safeMessage = "Üks või mitu toodet ei ole enam saadaval.";
+      } else if (error.message.includes("Item count")) {
+        safeMessage = "Lubamatu toodete arv.";
+      } else if (error.message.includes("Invalid email")) {
+        safeMessage = "Vigane e-posti aadress.";
+      } else if (error.message.includes("Phone must be")) {
+        safeMessage = "Vigane telefoninumber.";
+      } else if (error.message.includes("Customer name")) {
+        safeMessage = "Vigane nimi.";
+      } else if (error.message.includes("Address must be")) {
+        safeMessage = "Aadress on liiga pikk.";
+      }
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: safeMessage }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

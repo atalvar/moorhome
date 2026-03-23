@@ -82,6 +82,24 @@ export type Database = {
         }
         Relationships: []
       }
+      reservation_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string
+        }
+        Relationships: []
+      }
       reservation_items: {
         Row: {
           created_at: string
@@ -171,6 +189,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_ip: string
+          p_max_attempts?: number
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
       create_reservation: {
         Args: {
           p_customer_address?: string

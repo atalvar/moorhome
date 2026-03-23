@@ -11,56 +11,43 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative gradient-hero overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
-          <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+      <section className="relative overflow-hidden min-h-[70vh] flex items-center">
+        {/* Background image with blur overlay */}
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&h=900&fit=crop"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-background/75 glass" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50" />
         </div>
 
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-in">
-              <span className="inline-block text-secondary font-medium text-sm uppercase tracking-[0.2em] mb-6 px-4 py-1.5 gradient-sage rounded-full">
-                Käsitöö & Kirg
-              </span>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1]">
-                Anname vanale mööblile{' '}
-                <span className="text-gradient">uue elu</span>
-              </h1>
-              <p className="text-muted-foreground text-lg mt-6 leading-relaxed max-w-lg">
-                Restaureerime armastusega vana mööblit ning müüme ainulaadseid 
-                vintage mööblieksemplare. Iga ese räägib oma lugu.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 mt-10">
-                <Link to="/pood">
-                  <Button size="lg" className="gap-2 w-full sm:w-auto gradient-warm border-0 text-primary-foreground shadow-medium hover:shadow-elevated transition-all duration-300 hover:-translate-y-0.5">
-                    Sirvi tooteid
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link to="/kontakt">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
-                    Võta ühendust
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <div className="relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-elevated">
-                <img
-                  src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop"
-                  alt="Restaureeritud mööbel"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* Floating badge */}
-              <div className="absolute -bottom-6 -left-6 bg-card/90 glass p-5 rounded-2xl shadow-elevated border border-border/50">
-                <p className="font-serif text-3xl font-bold text-gradient">15+</p>
-                <p className="text-sm text-muted-foreground mt-0.5">aastat kogemust</p>
-              </div>
-              {/* Decorative accent */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 gradient-sage rounded-2xl -z-10 opacity-60" />
+          <div className="max-w-2xl animate-fade-in">
+            <span className="inline-block text-secondary font-medium text-sm uppercase tracking-[0.2em] mb-6 px-4 py-1.5 gradient-sage rounded-full">
+              Käsitöö & Kirg
+            </span>
+            <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1]">
+              Anname vanale mööblile{' '}
+              <span className="text-gradient">uue elu</span>
+            </h1>
+            <p className="text-muted-foreground text-lg mt-6 leading-relaxed max-w-lg">
+              Restaureerime armastusega vana mööblit ning müüme ainulaadseid 
+              vintage mööblieksemplare. Iga ese räägib oma lugu.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 mt-10">
+              <Link to="/pood">
+                <Button size="lg" className="gap-2 w-full sm:w-auto gradient-warm border-0 text-primary-foreground shadow-medium hover:shadow-elevated transition-all duration-300 hover:-translate-y-0.5">
+                  Sirvi tooteid
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/kontakt">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto border-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300 bg-background/50">
+                  Võta ühendust
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

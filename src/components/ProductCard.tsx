@@ -40,7 +40,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <h3 className="font-serif text-lg font-medium mt-1.5 text-foreground group-hover:text-primary transition-colors">
           {product.name}
         </h3>
-        <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
           {product.description}
         </p>
         <div className="flex items-center justify-between mt-5 pt-4 border-t border-border/50">

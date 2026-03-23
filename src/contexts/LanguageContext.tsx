@@ -274,7 +274,7 @@ const translations = {
     order_address: 'Delivery address *',
     order_address_placeholder: 'Full address with postal code',
     order_total: 'Total',
-    order_after: 'After confirming your order, we will contact you within 24 hours.',
+    order_after: 'An invoice will be sent to your email after order confirmation.',
     order_confirming: 'Confirming...',
     order_confirm_btn: 'Confirm order',
     order_continue: 'Continue browsing',

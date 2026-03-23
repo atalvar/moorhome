@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Menu, X, LogOut } from "lucide-react";
+import { ShoppingBag, Menu, X, LogOut } from "lucide-react";
 import { useReservation } from "@/contexts/ReservationContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";

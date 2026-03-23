@@ -11,57 +11,68 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-cream-dark overflow-hidden">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
+      <section className="relative gradient-hero overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+        </div>
+
+        <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
-              <span className="text-secondary font-medium text-sm uppercase tracking-widest">
+              <span className="inline-block text-secondary font-medium text-sm uppercase tracking-[0.2em] mb-6 px-4 py-1.5 gradient-sage rounded-full">
                 Käsitöö & Kirg
               </span>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mt-4 leading-tight">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1]">
                 Anname vanale mööblile{' '}
-                <span className="text-secondary">uue elu</span>
+                <span className="text-gradient">uue elu</span>
               </h1>
               <p className="text-muted-foreground text-lg mt-6 leading-relaxed max-w-lg">
                 Restaureerime armastusega vana mööblit ning müüme ainulaadseid 
                 vintage mööblieksemplare. Iga ese räägib oma lugu.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 mt-8">
+              <div className="flex flex-col sm:flex-row gap-4 mt-10">
                 <Link to="/pood">
-                  <Button size="lg" className="gap-2 w-full sm:w-auto">
+                  <Button size="lg" className="gap-2 w-full sm:w-auto gradient-warm border-0 text-primary-foreground shadow-medium hover:shadow-elevated transition-all duration-300 hover:-translate-y-0.5">
                     Sirvi tooteid
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
                 <Link to="/kontakt">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
                     Võta ühendust
                   </Button>
                 </Link>
               </div>
             </div>
             <div className="relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-2xl">
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-elevated">
                 <img
                   src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop"
                   alt="Restaureeritud mööbel"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-4 -left-4 bg-card p-4 rounded-lg shadow-lg border border-border">
-                <p className="font-serif text-2xl font-bold text-foreground">15+</p>
-                <p className="text-sm text-muted-foreground">aastat kogemust</p>
+              {/* Floating badge */}
+              <div className="absolute -bottom-6 -left-6 bg-card/90 glass p-5 rounded-2xl shadow-elevated border border-border/50">
+                <p className="font-serif text-3xl font-bold text-gradient">15+</p>
+                <p className="text-sm text-muted-foreground mt-0.5">aastat kogemust</p>
               </div>
+              {/* Decorative accent */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 gradient-sage rounded-2xl -z-10 opacity-60" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Values Section */}
-      <section className="py-16 md:py-24 bg-background">
+      <section className="py-20 md:py-28 gradient-subtle relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
+          <div className="text-center mb-16">
+            <span className="text-secondary font-medium text-sm uppercase tracking-[0.2em]">Meie väärtused</span>
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mt-3">
               Miks valida meid?
             </h2>
             <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
@@ -76,13 +87,13 @@ const Index = () => {
             ].map((value, index) => (
               <div
                 key={index}
-                className="text-center p-6 rounded-lg bg-card border border-border hover:shadow-lg transition-shadow animate-fade-in"
+                className="text-center p-8 rounded-2xl bg-card/80 glass border border-border/50 hover:shadow-elevated hover:-translate-y-1 transition-all duration-300 animate-fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="w-14 h-14 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 gradient-sage rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-soft">
                   <value.icon className="h-7 w-7 text-secondary" />
                 </div>
-                <h3 className="font-serif text-xl font-semibold text-foreground mb-2">{value.title}</h3>
+                <h3 className="font-serif text-xl font-semibold text-foreground mb-3">{value.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{value.description}</p>
               </div>
             ))}
@@ -92,21 +103,25 @@ const Index = () => {
 
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
-        <section className="py-16 md:py-24 bg-cream-dark">
-          <div className="container mx-auto px-4">
+        <section className="py-20 md:py-28 gradient-hero relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/2 right-0 w-72 h-72 bg-secondary/5 rounded-full blur-3xl" />
+          </div>
+          <div className="container mx-auto px-4 relative z-10">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
               <div>
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">Valitud tooted</h2>
+                <span className="text-secondary font-medium text-sm uppercase tracking-[0.2em]">Kollektsioon</span>
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mt-2">Valitud tooted</h2>
                 <p className="text-muted-foreground mt-2">Avasta meie parimad restaureeritud mööbliesemed</p>
               </div>
               <Link to="/pood">
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 border-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
                   Vaata kõiki
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProducts.map((product, index) => (
                 <div key={product.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
                   <ProductCard product={product} />
@@ -118,16 +133,20 @@ const Index = () => {
       )}
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold">
-            Kas sul on mööbel, mis vajab uut elu?
+      <section className="py-20 md:py-28 gradient-warm text-primary-foreground relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        </div>
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h2 className="font-serif text-3xl md:text-5xl font-bold leading-tight">
+            Kas sul on mööbel, mis vajab uue elu?
           </h2>
-          <p className="mt-4 text-primary-foreground/80 max-w-2xl mx-auto">
+          <p className="mt-6 text-primary-foreground/80 max-w-2xl mx-auto text-lg leading-relaxed">
             Võta meiega ühendust ja arutame, kuidas saame sinu lemmikut mööblit restaureerida.
           </p>
-          <Link to="/kontakt" className="inline-block mt-8">
-            <Button variant="secondary" size="lg" className="gap-2">
+          <Link to="/kontakt" className="inline-block mt-10">
+            <Button size="lg" className="gap-2 bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-elevated transition-all duration-300 hover:-translate-y-0.5 text-base px-8">
               Küsi hinnapakkumist
               <ArrowRight className="h-4 w-4" />
             </Button>

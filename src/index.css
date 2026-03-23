@@ -18,7 +18,7 @@
     --primary: 30 35% 25%;
     --primary-foreground: 40 33% 97%;
 
-    --secondary: 140 15% 45%;
+    --secondary: 150 25% 38%;
     --secondary-foreground: 40 33% 97%;
 
     --muted: 35 20% 90%;
@@ -34,7 +34,7 @@
     --input: 35 20% 85%;
     --ring: 30 35% 25%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 40 25% 95%;
     --sidebar-foreground: 30 10% 15%;
@@ -49,10 +49,21 @@
     --wood-dark: 25 40% 18%;
     --wood-medium: 30 35% 35%;
     --wood-light: 35 30% 55%;
-    --sage: 140 15% 45%;
-    --sage-light: 140 20% 85%;
+    --sage: 150 25% 38%;
+    --sage-light: 145 25% 90%;
     --cream: 40 33% 97%;
-    --cream-dark: 40 25% 92%;
+    --cream-dark: 38 28% 93%;
+
+    /* Gradient tokens */
+    --gradient-hero: linear-gradient(135deg, hsl(38 28% 93%) 0%, hsl(145 25% 92%) 50%, hsl(38 28% 93%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(30 35% 25%) 0%, hsl(25 40% 32%) 50%, hsl(150 25% 30%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(40 33% 97%) 0%, hsl(38 28% 93%) 100%);
+    --gradient-sage: linear-gradient(135deg, hsl(145 25% 90%) 0%, hsl(140 20% 85%) 100%);
+
+    /* Shadow tokens */
+    --shadow-soft: 0 4px 20px -4px hsl(30 35% 25% / 0.08);
+    --shadow-medium: 0 8px 30px -6px hsl(30 35% 25% / 0.12);
+    --shadow-elevated: 0 16px 50px -12px hsl(30 35% 25% / 0.18);
   }
 
   .dark {
@@ -68,7 +79,7 @@
     --primary: 35 30% 70%;
     --primary-foreground: 30 15% 10%;
 
-    --secondary: 140 15% 35%;
+    --secondary: 150 25% 45%;
     --secondary-foreground: 40 20% 90%;
 
     --muted: 30 15% 20%;
@@ -96,8 +107,8 @@
     --wood-dark: 35 30% 70%;
     --wood-medium: 35 25% 50%;
     --wood-light: 35 20% 35%;
-    --sage: 140 15% 50%;
-    --sage-light: 140 15% 25%;
+    --sage: 150 25% 50%;
+    --sage-light: 145 15% 22%;
     --cream: 30 15% 10%;
     --cream-dark: 30 15% 15%;
   }
@@ -124,5 +135,45 @@
   
   .font-sans {
     font-family: 'Source Sans 3', sans-serif;
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+
+  .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  .gradient-sage {
+    background: var(--gradient-sage);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(150 30% 30%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 }

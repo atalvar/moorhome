@@ -31,19 +31,19 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const hasSalePrice = product.sale_price != null && product.sale_price < product.price;
 
   return (
-    <div className="group bg-card rounded-lg overflow-hidden border border-border hover:shadow-lg transition-all duration-300">
+    <div className="group bg-card/80 glass rounded-2xl overflow-hidden border border-border/50 hover:shadow-elevated hover:-translate-y-1 transition-all duration-300">
       <ProductImageGallery images={allImages} alt={product.name} />
-      <div className="p-4">
-        <span className="text-xs font-medium text-secondary uppercase tracking-wide">
+      <div className="p-5">
+        <span className="text-xs font-semibold text-secondary uppercase tracking-[0.15em]">
           {product.category}
         </span>
-        <h3 className="font-serif text-lg font-medium mt-1 text-foreground group-hover:text-primary transition-colors">
+        <h3 className="font-serif text-lg font-medium mt-1.5 text-foreground group-hover:text-primary transition-colors">
           {product.name}
         </h3>
-        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+        <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
           {product.description}
         </p>
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center justify-between mt-5 pt-4 border-t border-border/50">
           <div className="flex items-center gap-2">
             {hasSalePrice ? (
               <>
@@ -61,12 +61,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
           {isInReservation ? (
-            <Button size="sm" variant="outline" disabled className="gap-2">
+            <Button size="sm" variant="outline" disabled className="gap-2 rounded-full">
               <Check className="h-4 w-4" />
               Lisatud
             </Button>
           ) : (
-            <Button onClick={handleReserve} size="sm" className="gap-2">
+            <Button onClick={handleReserve} size="sm" className="gap-2 rounded-full gradient-warm border-0 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-300">
               <Calendar className="h-4 w-4" />
               Broneeri
             </Button>

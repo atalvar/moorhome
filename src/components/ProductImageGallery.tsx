@@ -36,55 +36,56 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl p-0 border-none bg-transparent shadow-none overflow-hidden [&>button]:hidden">
-          <div className="relative flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
-            {/* Close button */}
-            <button
-              onClick={() => setOpen(false)}
-              className="absolute top-3 right-3 z-50 w-9 h-9 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:bg-background transition-colors border border-border"
-            >
-              <X className="h-4 w-4 text-foreground" />
-            </button>
+        <DialogContent className="max-w-4xl p-0 border-none bg-transparent shadow-none overflow-visible [&>button]:hidden">
+          <div className="relative flex items-center justify-center">
+            {/* Navigation arrows - outside the card */}
+            {images.length > 1 && (
+              <>
+                <button
+                  className="absolute -left-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm hover:bg-background border border-border shadow-lg flex items-center justify-center transition-colors z-10"
+                  onClick={() => goTo(currentIndex - 1)}
+                >
+                  <ChevronLeft className="h-5 w-5 text-foreground" />
+                </button>
+                <button
+                  className="absolute -right-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm hover:bg-background border border-border shadow-lg flex items-center justify-center transition-colors z-10"
+                  onClick={() => goTo(currentIndex + 1)}
+                >
+                  <ChevronRight className="h-5 w-5 text-foreground" />
+                </button>
+              </>
+            )}
 
-            {/* Main image area */}
-            <div className="relative w-full bg-background/95 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl border border-border">
+            {/* Card */}
+            <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl border border-border bg-gradient-to-b from-background via-background to-muted/40">
+              {/* Close button */}
+              <button
+                onClick={() => setOpen(false)}
+                className="absolute top-3 right-3 z-50 w-9 h-9 rounded-full bg-muted/80 backdrop-blur-sm flex items-center justify-center hover:bg-muted transition-colors"
+              >
+                <X className="h-4 w-4 text-foreground" />
+              </button>
+
               {/* Product name header */}
-              <div className="px-6 py-4 border-b border-border/50">
-                <h3 className="font-serif text-lg font-semibold text-foreground text-center">
+              <div className="px-6 pt-5 pb-3">
+                <h3 className="font-serif text-xl font-semibold text-foreground text-center tracking-tight">
                   {alt}
                 </h3>
               </div>
 
               {/* Image */}
-              <div className="relative flex items-center justify-center bg-muted/30 p-4" style={{ minHeight: '300px', maxHeight: '65vh' }}>
+              <div className="relative flex items-center justify-center px-8 pb-4" style={{ minHeight: '320px' }}>
                 <img
                   src={images[currentIndex]}
                   alt={`${alt} ${currentIndex + 1}`}
-                  className="max-w-full max-h-full object-contain rounded-lg"
-                  style={{ maxHeight: '60vh' }}
+                  className="max-w-full object-contain rounded-xl"
+                  style={{ maxHeight: '58vh' }}
                 />
-
-                {images.length > 1 && (
-                  <>
-                    <button
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-md flex items-center justify-center transition-colors"
-                      onClick={() => goTo(currentIndex - 1)}
-                    >
-                      <ChevronLeft className="h-5 w-5 text-foreground" />
-                    </button>
-                    <button
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-md flex items-center justify-center transition-colors"
-                      onClick={() => goTo(currentIndex + 1)}
-                    >
-                      <ChevronRight className="h-5 w-5 text-foreground" />
-                    </button>
-                  </>
-                )}
               </div>
 
               {/* Thumbnails & counter */}
               {images.length > 1 && (
-                <div className="px-4 py-3 border-t border-border/50 flex items-center justify-center gap-2">
+                <div className="px-6 py-4 border-t border-border/40 bg-muted/20 flex items-center justify-center gap-2">
                   {images.map((img, i) => (
                     <button
                       key={i}
@@ -92,13 +93,13 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
                       className={`w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
                         i === currentIndex
                           ? 'border-primary ring-2 ring-primary/30 scale-105'
-                          : 'border-transparent opacity-60 hover:opacity-100'
+                          : 'border-transparent opacity-50 hover:opacity-100'
                       }`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
-                  <span className="text-xs text-muted-foreground ml-2">
+                  <span className="text-xs text-muted-foreground ml-3">
                     {currentIndex + 1}/{images.length}
                   </span>
                 </div>

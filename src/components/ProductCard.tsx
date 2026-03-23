@@ -46,7 +46,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <span className="text-xs font-semibold text-secondary uppercase tracking-[0.15em]">
           {categoryTranslationKey[product.category] ? t[categoryTranslationKey[product.category]] : product.category}
         </span>
-        </span>
         <h3 className="font-serif text-lg font-medium mt-1.5 text-foreground group-hover:text-primary transition-colors">
           {product.name}
         </h3>

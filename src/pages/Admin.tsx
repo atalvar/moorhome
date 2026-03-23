@@ -266,12 +266,10 @@ const Admin = () => {
               </Button>
             </div>
 
-            {showForm && (
+            {showForm && !editingId && (
               <form ref={formRef} onSubmit={handleSave} className="bg-card p-6 rounded-lg border border-border mb-6 animate-fade-in">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-serif text-lg font-semibold">
-                    {editingId ? 'Muuda toodet' : 'Uus toode'}
-                  </h3>
+                  <h3 className="font-serif text-lg font-semibold">Uus toode</h3>
                   <Button type="button" variant="ghost" size="icon" onClick={() => { setShowForm(false); setForm(emptyForm); setEditingId(null); }}>
                     <X className="h-4 w-4" />
                   </Button>
@@ -307,7 +305,7 @@ const Admin = () => {
                 </div>
                 <div className="flex gap-2 mt-4">
                   <Button type="submit" disabled={saving}>
-                    {saving ? 'Salvestamine...' : editingId ? 'Salvesta muudatused' : 'Lisa toode'}
+                    {saving ? 'Salvestamine...' : 'Lisa toode'}
                   </Button>
                   <Button type="button" variant="outline" onClick={() => { setShowForm(false); setForm(emptyForm); setEditingId(null); }}>
                     Tühista

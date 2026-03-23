@@ -234,12 +234,6 @@ const Admin = () => {
                 <ClipboardList className="h-4 w-4" /> Broneeringud
               </TabsTrigger>
             </TabsList>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground hidden sm:block">{user.email}</span>
-              <Button variant="ghost" size="sm" onClick={signOut} className="gap-2">
-                <LogOut className="h-4 w-4" /> Logi välja
-              </Button>
-            </div>
           </div>
 
           <TabsContent value="products">

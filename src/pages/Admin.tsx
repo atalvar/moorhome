@@ -210,6 +210,7 @@ const Admin = () => {
     await supabase.from('reservations').delete().eq('id', reservationId);
     for (const item of items) {
       if (item.product_id) {
+        await deleteStorageImages(item.product_id);
         await supabase.from('product_images').delete().eq('product_id', item.product_id);
         await supabase.from('products').delete().eq('id', item.product_id);
       }

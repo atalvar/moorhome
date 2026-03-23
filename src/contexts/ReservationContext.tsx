@@ -62,41 +62,20 @@ export const ReservationProvider = ({ children }: { children: ReactNode }) => {
   const clearReservation = () => setReservedItems([]);
 
   const confirmReservation = async (customerInfo: CustomerInfo): Promise<boolean> => {
-    // 1. Create reservation record
-    const { data: reservation, error: resError } = await supabase
-      .from('reservations')
-      .insert({
-        customer_name: customerInfo.name,
-        customer_email: customerInfo.email,
-        customer_phone: customerInfo.phone,
-        customer_address: customerInfo.address || null,
-      })
-      .select()
-      .single();
-
-    if (resError || !reservation) return false;
-
-    // 2. Create reservation items
     const items = reservedItems.map((item) => ({
-      reservation_id: reservation.id,
       product_id: item.id,
       delivery_method: item.deliveryMethod,
     }));
 
-    const { error: itemsError } = await supabase
-      .from('reservation_items')
-      .insert(items);
+    const { error } = await supabase.rpc('create_reservation', {
+      p_customer_name: customerInfo.name,
+      p_customer_email: customerInfo.email,
+      p_customer_phone: customerInfo.phone,
+      p_customer_address: customerInfo.address || null,
+      p_items: items,
+    });
 
-    if (itemsError) return false;
-
-    // 3. Mark products as reserved
-    const productIds = reservedItems.map((item) => item.id);
-    const { error: updateError } = await supabase
-      .from('products')
-      .update({ is_reserved: true })
-      .in('id', productIds);
-
-    if (updateError) return false;
+    if (error) return false;
 
     setReservedItems([]);
     return true;

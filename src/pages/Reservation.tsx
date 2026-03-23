@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useReservation, DeliveryMethod, CustomerInfo } from '@/contexts/ReservationContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,11 +9,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Trash2, Calendar, ArrowLeft, Truck, Store, CheckCircle2 } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowLeft, Truck, Store, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Reservation = () => {
   const { reservedItems, removeFromReservation, deliveryMethod, setDeliveryMethod, confirmReservation } = useReservation();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -33,7 +35,7 @@ const Reservation = () => {
     e.preventDefault();
 
     if (needsAddress && !customerInfo.address?.trim()) {
-      toast.error('Palun sisesta kohaletoimetamise aadress');
+      toast.error(t.order_address_required);
       return;
     }
 
@@ -47,7 +49,7 @@ const Reservation = () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       setShowSuccess(true);
     } else {
-      toast.error('Viga broneeringu tegemisel. Palun proovi uuesti.');
+      toast.error(t.order_error);
     }
   };
 
@@ -62,18 +64,18 @@ const Reservation = () => {
         <div className="container mx-auto px-4 py-16 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-20 h-20 bg-sage-light rounded-full flex items-center justify-center mx-auto mb-6">
-              <Calendar className="h-10 w-10 text-secondary" />
+              <ShoppingBag className="h-10 w-10 text-secondary" />
             </div>
             <h1 className="font-serif text-3xl font-bold text-foreground mb-4">
-              Broneeringuid pole
+              {t.order_empty}
             </h1>
             <p className="text-muted-foreground mb-8">
-              Sirvi meie poodi ja broneeri endale sobiv restaureeritud mööbel.
+              {t.order_empty_subtitle}
             </p>
             <Link to="/pood">
               <Button className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
-                Mine poodi
+                {t.order_go_shop}
               </Button>
             </Link>
           </div>
@@ -86,14 +88,12 @@ const Reservation = () => {
                 <CheckCircle2 className="h-12 w-12 text-green-600" />
               </div>
               <h2 className="font-serif text-2xl font-bold text-foreground mb-3">
-                Broneering kinnitatud!
+                {t.order_confirmed}
               </h2>
-              <p className="text-muted-foreground mb-6 leading-relaxed">
-                Täname teid! Oleme teie broneeringu kätte saanud ja võtame teiega <strong>24 tunni jooksul</strong> ühendust.
-              </p>
+              <p className="text-muted-foreground mb-6 leading-relaxed" dangerouslySetInnerHTML={{ __html: t.order_confirmed_msg }} />
               <Button onClick={handleSuccessClose} size="lg" className="w-full gap-2">
                 <ArrowLeft className="h-4 w-4" />
-                Tagasi poodi
+                {t.order_back_shop}
               </Button>
             </div>
           </DialogContent>
@@ -107,10 +107,10 @@ const Reservation = () => {
       <section className="bg-cream-dark py-12 md:py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground">
-            Broneering
+            {t.order_title}
           </h1>
           <p className="text-muted-foreground mt-4">
-            {itemCount} {itemCount === 1 ? 'toode' : 'toodet'} broneeringu nimekirjas
+            {itemCount} {itemCount === 1 ? t.order_product : t.order_products} {t.order_items_in}
           </p>
         </div>
       </section>
@@ -157,7 +157,7 @@ const Reservation = () => {
                 ))}
                 {/* Delivery method */}
                 <div className="p-4 border-t border-border/50 bg-muted/30">
-                  <p className="text-sm font-medium text-foreground mb-2">Kättetoimetamise viis:</p>
+                  <p className="text-sm font-medium text-foreground mb-2">{t.order_delivery}</p>
                   <RadioGroup
                     value={deliveryMethod}
                     onValueChange={(value) => setDeliveryMethod(value as DeliveryMethod)}
@@ -166,13 +166,13 @@ const Reservation = () => {
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="pickup" id="pickup-all" />
                       <Label htmlFor="pickup-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
-                        <Store className="h-4 w-4" /> Tulen poodi järgi
+                        <Store className="h-4 w-4" /> {t.order_pickup}
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="delivery" id="delivery-all" />
                       <Label htmlFor="delivery-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
-                        <Truck className="h-4 w-4" /> Kohaletoimetamine
+                        <Truck className="h-4 w-4" /> {t.order_delivery_opt}
                       </Label>
                     </div>
                   </RadioGroup>
@@ -182,40 +182,40 @@ const Reservation = () => {
 
             <div className="lg:col-span-1">
               <div className="bg-card p-6 rounded-lg border border-border sticky top-24">
-                <h2 className="font-serif text-xl font-semibold text-foreground mb-4">Kinnita broneering</h2>
+                <h2 className="font-serif text-xl font-semibold text-foreground mb-4">{t.order_confirm}</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="name">Nimi *</Label>
-                    <Input id="name" value={customerInfo.name} onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })} placeholder="Sinu nimi" required />
+                    <Label htmlFor="name">{t.order_name}</Label>
+                    <Input id="name" value={customerInfo.name} onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })} placeholder={t.contact_your_name} required />
                   </div>
                   <div>
-                    <Label htmlFor="email">E-post *</Label>
-                    <Input id="email" type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })} placeholder="sinu@email.ee" required />
+                    <Label htmlFor="email">{t.order_email}</Label>
+                    <Input id="email" type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })} placeholder={t.contact_your_email} required />
                   </div>
                   <div>
-                    <Label htmlFor="phone">Telefon *</Label>
+                    <Label htmlFor="phone">{t.order_phone}</Label>
                     <Input id="phone" type="tel" value={customerInfo.phone} onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })} placeholder="+372 ..." required />
                   </div>
                   {needsAddress && (
                     <div>
-                      <Label htmlFor="address">Kohaletoimetamise aadress *</Label>
-                      <Textarea id="address" value={customerInfo.address} onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })} placeholder="Täisaadress koos postiindeksiga" rows={3} required />
+                      <Label htmlFor="address">{t.order_address}</Label>
+                      <Textarea id="address" value={customerInfo.address} onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })} placeholder={t.order_address_placeholder} rows={3} required />
                     </div>
                   )}
                   <div className="pt-4 border-t border-border">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-muted-foreground">{itemCount} {itemCount === 1 ? 'toode' : 'toodet'}</span>
+                      <span className="text-sm text-muted-foreground">{itemCount} {itemCount === 1 ? t.order_product : t.order_products}</span>
                       <span className="text-lg font-semibold text-foreground">{total} €</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-4">Pärast broneeringu kinnitamist võtame teiega 24h jooksul ühendust.</p>
+                    <p className="text-sm text-muted-foreground mb-4">{t.order_after}</p>
                     <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                      {isSubmitting ? 'Kinnitamine...' : `Kinnita broneering (${total} €)`}
+                      {isSubmitting ? t.order_confirming : `${t.order_confirm_btn} (${total} €)`}
                     </Button>
                   </div>
                 </form>
                 <Link to="/pood" className="block mt-4">
                   <Button variant="outline" className="w-full gap-2">
-                    <ArrowLeft className="h-4 w-4" /> Jätka sirvimist
+                    <ArrowLeft className="h-4 w-4" /> {t.order_continue}
                   </Button>
                 </Link>
               </div>
@@ -231,14 +231,12 @@ const Reservation = () => {
               <CheckCircle2 className="h-12 w-12 text-green-600" />
             </div>
             <h2 className="font-serif text-2xl font-bold text-foreground mb-3">
-              Broneering kinnitatud!
+              {t.order_confirmed}
             </h2>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              Täname teid! Oleme teie broneeringu kätte saanud ja võtame teiega <strong>24 tunni jooksul</strong> ühendust.
-            </p>
+            <p className="text-muted-foreground mb-6 leading-relaxed" dangerouslySetInnerHTML={{ __html: t.order_confirmed_msg }} />
             <Button onClick={handleSuccessClose} size="lg" className="w-full gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Tagasi poodi
+              {t.order_back_shop}
             </Button>
           </div>
         </DialogContent>

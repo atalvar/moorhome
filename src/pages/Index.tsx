@@ -2,17 +2,18 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Hammer, Heart, Recycle } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
+import { useLanguage } from '@/contexts/LanguageContext';
 import ProductCard from '@/components/ProductCard';
 
 const Index = () => {
   const { data: products = [] } = useProducts();
+  const { t } = useLanguage();
   const featuredProducts = products.slice(0, 3);
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden min-h-[70vh] flex items-center">
-        {/* Background image with blur overlay */}
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&h=900&fit=crop"
@@ -26,26 +27,25 @@ const Index = () => {
         <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
           <div className="max-w-2xl animate-fade-in">
             <span className="inline-block text-secondary font-medium text-sm uppercase tracking-[0.2em] mb-6 px-4 py-1.5 gradient-sage rounded-full">
-              Käsitöö & Kirg
+              {t.hero_badge}
             </span>
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-[1.1]">
-              Anname vanale mööblile{' '}
-              <span className="text-gradient">uue elu</span>
+              {t.hero_title1}{' '}
+              <span className="text-gradient">{t.hero_title2}</span>
             </h1>
             <p className="text-muted-foreground text-lg mt-6 leading-relaxed max-w-lg">
-              Restaureerime armastusega vana mööblit ning müüme ainulaadseid 
-              vintage mööblieksemplare. Iga ese räägib oma lugu.
+              {t.hero_subtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-10">
               <Link to="/pood">
                 <Button size="lg" className="gap-2 w-full sm:w-auto gradient-warm border-0 text-primary-foreground shadow-medium hover:shadow-elevated transition-all duration-300 hover:-translate-y-0.5">
-                  Sirvi tooteid
+                  {t.hero_browse}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/kontakt">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto border-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300 bg-background/50">
-                  Võta ühendust
+                  {t.hero_contact}
                 </Button>
               </Link>
             </div>
@@ -58,19 +58,19 @@ const Index = () => {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <span className="text-secondary font-medium text-sm uppercase tracking-[0.2em]">Meie väärtused</span>
+            <span className="text-secondary font-medium text-sm uppercase tracking-[0.2em]">{t.values_label}</span>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mt-3">
-              Miks valida meid?
+              {t.values_title}
             </h2>
             <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
-              Oleme pühendunud kvaliteedile ja jätkusuutlikkusele
+              {t.values_subtitle}
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: Hammer, title: 'Käsitöö', description: 'Iga ese restaureeritakse hoolikalt käsitsi, kasutades traditsioonilisi tehnikaid.' },
-              { icon: Heart, title: 'Kirg', description: 'Armastame vana mööblit ja anname endast parima, et tuua välja selle ilu.' },
-              { icon: Recycle, title: 'Jätkusuutlikkus', description: 'Restaureerimine on keskkonnasõbralik viis mööbli eluea pikendamiseks.' },
+              { icon: Hammer, title: t.values_craft, description: t.values_craft_desc },
+              { icon: Heart, title: t.values_passion, description: t.values_passion_desc },
+              { icon: Recycle, title: t.values_sustain, description: t.values_sustain_desc },
             ].map((value, index) => (
               <div
                 key={index}
@@ -97,13 +97,13 @@ const Index = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
               <div>
-                <span className="text-secondary font-medium text-sm uppercase tracking-[0.2em]">Kollektsioon</span>
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mt-2">Valitud tooted</h2>
-                <p className="text-muted-foreground mt-2">Avasta meie parimad restaureeritud mööbliesemed</p>
+                <span className="text-secondary font-medium text-sm uppercase tracking-[0.2em]">{t.featured_label}</span>
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mt-2">{t.featured_title}</h2>
+                <p className="text-muted-foreground mt-2">{t.featured_subtitle}</p>
               </div>
               <Link to="/pood">
                 <Button variant="outline" className="gap-2 border-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
-                  Vaata kõiki
+                  {t.featured_viewAll}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -127,14 +127,14 @@ const Index = () => {
         </div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="font-serif text-3xl md:text-5xl font-bold leading-tight">
-            Kas sul on mööbel, mis vajab uue elu?
+            {t.cta_title}
           </h2>
           <p className="mt-6 text-primary-foreground/80 max-w-2xl mx-auto text-lg leading-relaxed">
-            Võta meiega ühendust ja arutame, kuidas saame sinu lemmikut mööblit restaureerida.
+            {t.cta_subtitle}
           </p>
           <Link to="/kontakt" className="inline-block mt-10">
             <Button size="lg" className="gap-2 bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-elevated transition-all duration-300 hover:-translate-y-0.5 text-base px-8">
-              Küsi hinnapakkumist
+              {t.cta_button}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>

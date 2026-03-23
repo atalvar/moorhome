@@ -56,11 +56,11 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
               </div>
 
               {/* Image */}
-              <div className="relative flex items-center justify-center bg-muted/30" style={{ minHeight: '300px', maxHeight: '60vh' }}>
+              <div className="relative flex items-center justify-center bg-muted/30 p-4" style={{ minHeight: '300px', maxHeight: '65vh' }}>
                 <img
                   src={images[currentIndex]}
                   alt={`${alt} ${currentIndex + 1}`}
-                  className="w-full h-full object-contain"
+                  className="max-w-full max-h-full object-contain rounded-lg"
                   style={{ maxHeight: '60vh' }}
                 />
 

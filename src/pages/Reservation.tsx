@@ -117,7 +117,7 @@ const Reservation = () => {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {reservedItems.map((item) => (
+              {reservedItems.map((item, index) => (
                 <div key={item.id} className="bg-card p-4 rounded-lg border border-border animate-fade-in">
                   <div className="flex gap-4">
                     <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
@@ -150,31 +150,32 @@ const Reservation = () => {
                       </div>
                     </div>
                   </div>
+                  {/* Show delivery method choice only on the last item to avoid repetition */}
+                  {index === reservedItems.length - 1 && (
+                    <div className="mt-4 pt-3 border-t border-border/50">
+                      <p className="text-sm font-medium text-foreground mb-2">Kättetoimetamise viis:</p>
+                      <RadioGroup
+                        value={deliveryMethod}
+                        onValueChange={(value) => setDeliveryMethod(value as DeliveryMethod)}
+                        className="flex gap-6"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="pickup" id="pickup-all" />
+                          <Label htmlFor="pickup-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
+                            <Store className="h-4 w-4" /> Tulen poodi järgi
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="delivery" id="delivery-all" />
+                          <Label htmlFor="delivery-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
+                            <Truck className="h-4 w-4" /> Kohaletoimetamine
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                  )}
                 </div>
               ))}
-
-              {/* Delivery method after items */}
-              <div className="bg-card p-5 rounded-lg border border-border">
-                <p className="text-sm font-medium text-foreground mb-3">Kättetoimetamise viis:</p>
-                <RadioGroup
-                  value={deliveryMethod}
-                  onValueChange={(value) => setDeliveryMethod(value as DeliveryMethod)}
-                  className="flex gap-6"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="pickup" id="pickup-all" />
-                    <Label htmlFor="pickup-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
-                      <Store className="h-4 w-4" /> Tulen poodi järgi
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="delivery" id="delivery-all" />
-                    <Label htmlFor="delivery-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
-                      <Truck className="h-4 w-4" /> Kohaletoimetamine
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
             </div>
 
             <div className="lg:col-span-1">

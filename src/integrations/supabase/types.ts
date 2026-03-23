@@ -82,6 +82,24 @@ export type Database = {
         }
         Relationships: []
       }
+      reservation_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string
+        }
+        Relationships: []
+      }
       reservation_items: {
         Row: {
           created_at: string

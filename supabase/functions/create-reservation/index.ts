@@ -1,0 +1,90 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+// Simple in-memory rate limiter (per edge function instance)
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 5; // max 5 reservations per minute per IP
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = (rateLimitMap.get(ip) || []).filter(
+    (t) => now - t < RATE_LIMIT_WINDOW_MS
+  );
+  if (timestamps.length >= RATE_LIMIT_MAX) {
+    rateLimitMap.set(ip, timestamps);
+    return true;
+  }
+  timestamps.push(now);
+  rateLimitMap.set(ip, timestamps);
+  return false;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") ||
+      "unknown";
+
+    if (isRateLimited(ip)) {
+      return new Response(
+        JSON.stringify({ error: "Liiga palju päringuid. Proovi hiljem uuesti." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const body = await req.json();
+    const { customer_name, customer_email, customer_phone, customer_address, items } = body;
+
+    // Basic server-side validation
+    if (!customer_name || !customer_email || !customer_phone || !items?.length) {
+      return new Response(
+        JSON.stringify({ error: "Puuduvad kohustuslikud väljad" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Use service role to call the RPC (since anon no longer has EXECUTE)
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data, error } = await supabase.rpc("create_reservation", {
+      p_customer_name: customer_name,
+      p_customer_email: customer_email,
+      p_customer_phone: customer_phone,
+      p_customer_address: customer_address || null,
+      p_items: items,
+    });
+
+    if (error) {
+      console.error("Reservation error:", error.message);
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ reservation_id: data }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return new Response(
+      JSON.stringify({ error: "Serveri viga" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});

@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { LogOut, Plus, Trash2, Edit2, Package, ClipboardList, Loader2, X, RotateCcw, ShieldAlert } from 'lucide-react';
+import { Plus, Trash2, Edit2, Package, ClipboardList, Loader2, X, RotateCcw, ShieldAlert } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import AdminImageManager, { ImageItem } from '@/components/admin/AdminImageManager';
 

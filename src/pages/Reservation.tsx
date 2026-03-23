@@ -203,9 +203,13 @@ const Reservation = () => {
                     </div>
                   )}
                   <div className="pt-4 border-t border-border">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-muted-foreground">{itemCount} {itemCount === 1 ? 'toode' : 'toodet'}</span>
+                      <span className="text-lg font-semibold text-foreground">{total} €</span>
+                    </div>
                     <p className="text-sm text-muted-foreground mb-4">Pärast broneeringu kinnitamist võtame teiega 24h jooksul ühendust.</p>
                     <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                      {isSubmitting ? 'Kinnitamine...' : 'Kinnita broneering'}
+                      {isSubmitting ? 'Kinnitamine...' : `Kinnita broneering (${total} €)`}
                     </Button>
                   </div>
                 </form>

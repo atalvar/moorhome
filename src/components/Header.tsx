@@ -88,7 +88,7 @@ const Header = () => {
             {totalItems > 0 && (
               <Link to="/broneering">
                 <Button variant="ghost" size="icon" className="relative animate-fade-in">
-                  <Calendar className="h-5 w-5" />
+                  <ShoppingBag className="h-5 w-5" />
                   <span className="absolute -top-1 -right-1 gradient-warm text-primary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium shadow-soft">
                     {totalItems}
                   </span>

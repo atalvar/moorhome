@@ -69,7 +69,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </Button>
           ) : (
             <Button onClick={handleReserve} size="sm" className="gap-2 rounded-full gradient-warm border-0 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-300">
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingCart className="h-4 w-4" />
               {t.product_buy}
             </Button>
           )}

@@ -39,8 +39,7 @@ export const useAuth = () => {
     const wasActive = sessionStorage.getItem(SESSION_KEY);
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session && !wasActive) {
-        // Browser was closed and reopened — sign out
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
         setSession(null);
         setUser(null);
         setLoading(false);

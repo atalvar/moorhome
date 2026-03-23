@@ -116,66 +116,66 @@ const Reservation = () => {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
-              {reservedItems.map((item, index) => (
-                <div key={item.id} className="bg-card p-4 rounded-lg border border-border animate-fade-in">
-                  <div className="flex gap-4">
-                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-serif font-semibold text-foreground">{item.name}</h3>
-                          <p className="text-sm text-secondary">{item.category}</p>
-                          <p className="text-lg font-semibold text-foreground mt-1">
-                            {item.sale_price != null && item.sale_price < item.price ? (
-                              <>
-                                <span className="text-sm text-muted-foreground line-through mr-2">{item.price} €</span>
-                                <span className="text-destructive">{item.sale_price} €</span>
-                              </>
-                            ) : (
-                              <>{item.price} €</>
-                            )}
-                          </p>
+            <div className="lg:col-span-2">
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
+                {reservedItems.map((item, index) => (
+                  <div key={item.id} className={`p-4 animate-fade-in ${index > 0 ? 'border-t border-border/50' : ''}`}>
+                    <div className="flex gap-4">
+                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-serif font-semibold text-foreground">{item.name}</h3>
+                            <p className="text-sm text-secondary">{item.category}</p>
+                            <p className="text-lg font-semibold text-foreground mt-1">
+                              {item.sale_price != null && item.sale_price < item.price ? (
+                                <>
+                                  <span className="text-sm text-muted-foreground line-through mr-2">{item.price} €</span>
+                                  <span className="text-destructive">{item.sale_price} €</span>
+                                </>
+                              ) : (
+                                <>{item.price} €</>
+                              )}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeFromReservation(item.id)}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeFromReservation(item.id)}
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
                   </div>
-                  {/* Show delivery method choice only on the last item to avoid repetition */}
-                  {index === reservedItems.length - 1 && (
-                    <div className="mt-4 pt-3 border-t border-border/50">
-                      <p className="text-sm font-medium text-foreground mb-2">Kättetoimetamise viis:</p>
-                      <RadioGroup
-                        value={deliveryMethod}
-                        onValueChange={(value) => setDeliveryMethod(value as DeliveryMethod)}
-                        className="flex gap-6"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="pickup" id="pickup-all" />
-                          <Label htmlFor="pickup-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
-                            <Store className="h-4 w-4" /> Tulen poodi järgi
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="delivery" id="delivery-all" />
-                          <Label htmlFor="delivery-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
-                            <Truck className="h-4 w-4" /> Kohaletoimetamine
-                          </Label>
-                        </div>
-                      </RadioGroup>
+                ))}
+                {/* Delivery method */}
+                <div className="p-4 border-t border-border/50 bg-muted/30">
+                  <p className="text-sm font-medium text-foreground mb-2">Kättetoimetamise viis:</p>
+                  <RadioGroup
+                    value={deliveryMethod}
+                    onValueChange={(value) => setDeliveryMethod(value as DeliveryMethod)}
+                    className="flex gap-6"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="pickup" id="pickup-all" />
+                      <Label htmlFor="pickup-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
+                        <Store className="h-4 w-4" /> Tulen poodi järgi
+                      </Label>
                     </div>
-                  )}
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="delivery" id="delivery-all" />
+                      <Label htmlFor="delivery-all" className="flex items-center gap-1.5 text-sm cursor-pointer">
+                        <Truck className="h-4 w-4" /> Kohaletoimetamine
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
-              ))}
+              </div>
             </div>
 
             <div className="lg:col-span-1">

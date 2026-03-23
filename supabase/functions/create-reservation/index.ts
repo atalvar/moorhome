@@ -18,7 +18,18 @@ Deno.serve(async (req) => {
       req.headers.get("cf-connecting-ip") ||
       "unknown";
 
-    if (isRateLimited(ip)) {
+    // Use service role client for all DB operations
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // DB-based distributed rate limiting
+    const { data: isLimited, error: rlError } = await supabase.rpc("check_rate_limit", { p_ip: ip });
+    if (rlError) {
+      console.error("Rate limit check error:", rlError.message);
+    }
+    if (isLimited) {
       return new Response(
         JSON.stringify({ error: "Liiga palju päringuid. Proovi hiljem uuesti." }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }

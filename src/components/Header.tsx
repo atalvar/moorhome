@@ -56,25 +56,27 @@ const Header = () => {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {/* Language switcher */}
-            <div className="flex rounded-full border border-border overflow-hidden">
-              <button
-                onClick={() => setLanguage('et')}
-                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
-                  language === 'et' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                ET
-              </button>
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-2.5 py-1 text-xs font-medium transition-colors ${
-                  language === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                EN
-              </button>
-            </div>
+            {/* Language switcher - hidden for admin */}
+            {!user && (
+              <div className="flex rounded-full border border-border overflow-hidden">
+                <button
+                  onClick={() => setLanguage('et')}
+                  className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                    language === 'et' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  ET
+                </button>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                    language === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
+            )}
 
             {user && (
               <div className="hidden md:flex items-center gap-2">

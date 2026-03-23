@@ -230,6 +230,10 @@ const translations = {
     shop_title: "Our Shop",
     shop_subtitle: "Browse our carefully restored furniture. Each piece is unique — buy the one that suits you!",
     shop_all: "All",
+    shop_cat_furniture: "Furniture",
+    shop_cat_lighting: "Lighting",
+    shop_cat_misc: "Miscellaneous",
+    shop_cat_sale: "Sale -%",
     shop_empty_all: "All products are currently sold.",
     shop_empty_cat: "No products in this category at the moment.",
 

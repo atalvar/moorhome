@@ -40,7 +40,7 @@ const Contact = () => {
               
               <div className="space-y-6">
                 {[
-                  { icon: MapPin, title: 'Aadress', lines: ['Vana-Posti 7', '10146 Tallinn, Eesti'] },
+                  { icon: MapPin, title: 'Aadress', lines: ['Keskväljak 10', '76607 Keila, Eesti'] },
                   { icon: Phone, title: 'Telefon', lines: ['+372 5123 4567'] },
                   { icon: Mail, title: 'E-post', lines: ['info@mooblimeister.ee'] },
                   { icon: Clock, title: 'Lahtiolekuajad', lines: ['E-R: 10:00 - 18:00', 'L: 10:00 - 15:00', 'P: Suletud'] },

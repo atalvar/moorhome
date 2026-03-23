@@ -250,6 +250,7 @@ const Admin = () => {
   const handleDeleteItem = async (reservationId: string, item: any, totalItems: number) => {
     await supabase.from('reservation_items').delete().eq('id', item.id);
     if (item.product_id) {
+      await deleteStorageImages(item.product_id);
       await supabase.from('product_images').delete().eq('product_id', item.product_id);
       await supabase.from('products').delete().eq('id', item.product_id);
     }

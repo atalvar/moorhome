@@ -14,7 +14,7 @@ export const useAuth = () => {
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     inactivityTimer.current = setTimeout(async () => {
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
     }, INACTIVITY_TIMEOUT);
   }, []);
 
@@ -39,8 +39,7 @@ export const useAuth = () => {
     const wasActive = sessionStorage.getItem(SESSION_KEY);
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session && !wasActive) {
-        // Browser was closed and reopened — sign out
-        await supabase.auth.signOut();
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
         setSession(null);
         setUser(null);
         setLoading(false);
@@ -80,7 +79,7 @@ export const useAuth = () => {
   const signOut = async () => {
     sessionStorage.removeItem(SESSION_KEY);
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
   };
 
   return { user, session, loading, signIn, signUp, signOut };

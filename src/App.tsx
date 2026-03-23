@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,12 +9,13 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
-import Shop from "./pages/Shop";
-import Contact from "./pages/Contact";
-import Reservation from "./pages/Reservation";
-import Admin from "./pages/Admin";
-import AdminLogin from "./pages/AdminLogin";
-import NotFound from "./pages/NotFound";
+
+const Shop = lazy(() => import("./pages/Shop"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Reservation = lazy(() => import("./pages/Reservation"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -35,12 +37,12 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
-              <Route path="/pood" element={<PublicLayout><Shop /></PublicLayout>} />
-              <Route path="/kontakt" element={<PublicLayout><Contact /></PublicLayout>} />
-              <Route path="/broneering" element={<PublicLayout><Reservation /></PublicLayout>} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<PublicLayout><Admin /></PublicLayout>} />
-              <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+              <Route path="/pood" element={<Suspense fallback={null}><PublicLayout><Shop /></PublicLayout></Suspense>} />
+              <Route path="/kontakt" element={<Suspense fallback={null}><PublicLayout><Contact /></PublicLayout></Suspense>} />
+              <Route path="/broneering" element={<Suspense fallback={null}><PublicLayout><Reservation /></PublicLayout></Suspense>} />
+              <Route path="/admin/login" element={<Suspense fallback={null}><AdminLogin /></Suspense>} />
+              <Route path="/admin" element={<Suspense fallback={null}><PublicLayout><Admin /></PublicLayout></Suspense>} />
+              <Route path="*" element={<Suspense fallback={null}><PublicLayout><NotFound /></PublicLayout></Suspense>} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>

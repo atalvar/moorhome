@@ -41,7 +41,7 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
             {/* Close button */}
             <button
               onClick={() => setOpen(false)}
-              className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors border border-border shadow-lg"
+              className="absolute -top-5 -right-5 z-50 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors border border-border shadow-lg"
             >
               <X className="h-5 w-5 text-foreground" />
             </button>
@@ -50,13 +50,13 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
             {images.length > 1 && (
               <>
                 <button
-                  className="fixed left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-lg flex items-center justify-center transition-colors z-50"
+                  className="absolute -left-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-lg flex items-center justify-center transition-colors z-50"
                   onClick={() => goTo(currentIndex - 1)}
                 >
                   <ChevronLeft className="h-5 w-5 text-foreground" />
                 </button>
                 <button
-                  className="fixed right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-lg flex items-center justify-center transition-colors z-50"
+                  className="absolute -right-14 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border shadow-lg flex items-center justify-center transition-colors z-50"
                   onClick={() => goTo(currentIndex + 1)}
                 >
                   <ChevronRight className="h-5 w-5 text-foreground" />

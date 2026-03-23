@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { Phone, Mail, MapPin } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -13,7 +13,7 @@ const Footer = () => {
                 <span className="font-serif text-lg font-bold">M</span>
               </div>
               <div>
-                <h3 className="font-serif text-lg font-semibold">Mööbli Meister</h3>
+                <h3 className="font-serif text-lg font-semibold">Moor Home</h3>
                 <p className="text-xs text-primary-foreground/70">Restaureerimine & Müük</p>
               </div>
             </div>
@@ -26,13 +26,22 @@ const Footer = () => {
           <div>
             <h4 className="font-serif text-lg mb-4">Kiirlingid</h4>
             <nav className="space-y-2">
-              <Link to="/" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              <Link
+                to="/"
+                className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+              >
                 Avaleht
               </Link>
-              <Link to="/pood" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              <Link
+                to="/pood"
+                className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+              >
                 Pood
               </Link>
-              <Link to="/kontakt" className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+              <Link
+                to="/kontakt"
+                className="block text-sm text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+              >
                 Kontakt
               </Link>
             </nav>

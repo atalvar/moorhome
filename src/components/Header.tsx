@@ -1,8 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Calendar, Menu, X } from 'lucide-react';
-import { useReservation } from '@/contexts/ReservationContext';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Link, useLocation } from "react-router-dom";
+import { Calendar, Menu, X } from "lucide-react";
+import { useReservation } from "@/contexts/ReservationContext";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const { totalItems } = useReservation();
@@ -10,9 +10,9 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { path: '/', label: 'Avaleht' },
-    { path: '/pood', label: 'Pood' },
-    { path: '/kontakt', label: 'Kontakt' },
+    { path: "/", label: "Avaleht" },
+    { path: "/pood", label: "Pood" },
+    { path: "/kontakt", label: "Kontakt" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -27,7 +27,7 @@ const Header = () => {
               <span className="text-primary-foreground font-serif text-lg md:text-xl font-bold">M</span>
             </div>
             <div className="hidden sm:block">
-              <h1 className="font-serif text-lg md:text-xl font-semibold text-foreground">Mööbli Meister</h1>
+              <h1 className="font-serif text-lg md:text-xl font-semibold text-foreground">Moor Home</h1>
               <p className="text-xs text-muted-foreground -mt-0.5">Restaureerimine & Müük</p>
             </div>
           </Link>
@@ -39,9 +39,7 @@ const Header = () => {
                 key={link.path}
                 to={link.path}
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive(link.path)
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
+                  isActive(link.path) ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 {link.label}
@@ -61,7 +59,7 @@ const Header = () => {
                 </Button>
               </Link>
             )}
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -82,9 +80,7 @@ const Header = () => {
                 to={link.path}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block py-3 text-sm font-medium transition-colors ${
-                  isActive(link.path)
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
+                  isActive(link.path) ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 {link.label}

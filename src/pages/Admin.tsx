@@ -185,17 +185,8 @@ const Admin = () => {
     }
   };
 
-  const handleUnreserve = async (productId: string) => {
-    await supabase.from('reservation_items').delete().eq('product_id', productId);
-    const { error } = await supabase.from('products').update({ is_reserved: false }).eq('id', productId);
-    if (error) {
-      toast.error('Broneeringu tühistamine ebaõnnestus');
-    } else {
-      toast.success('Toode taas saadaval');
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['reservations'] });
-    }
-  };
+
+
 
   const handleDeleteReservation = async (reservationId: string, items: any[]) => {
     // Delete all reservation items

@@ -110,7 +110,7 @@ const Reservation = () => {
             Broneering
           </h1>
           <p className="text-muted-foreground mt-4">
-            {reservedItems.length} {reservedItems.length === 1 ? 'ese' : 'eset'} broneeringu nimekirjas
+            {itemCount} {itemCount === 1 ? 'toode' : 'toodet'} broneeringu nimekirjas
           </p>
         </div>
       </section>

@@ -37,7 +37,7 @@ const App = () => (
             <Route path="/kontakt" element={<PublicLayout><Contact /></PublicLayout>} />
             <Route path="/broneering" element={<PublicLayout><Reservation /></PublicLayout>} />
             <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin" element={<PublicLayout><Admin /></PublicLayout>} />
             <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
           </Routes>
         </BrowserRouter>

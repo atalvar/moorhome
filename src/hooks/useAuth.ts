@@ -79,7 +79,7 @@ export const useAuth = () => {
   const signOut = async () => {
     sessionStorage.removeItem(SESSION_KEY);
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
   };
 
   return { user, session, loading, signIn, signUp, signOut };

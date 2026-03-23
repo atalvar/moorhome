@@ -62,7 +62,7 @@ const Shop = () => {
                     : 'border-2 hover:border-primary'
                 }`}
               >
-                {category === 'Kõik' ? t.shop_all : category}
+                {translateCategory(category)}
               </Button>
             ))}
           </div>

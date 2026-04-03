@@ -209,7 +209,7 @@ const Reservation = () => {
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">{t.order_after}</p>
                     <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                      {isSubmitting ? t.order_confirming : `${t.order_confirm_btn} (${total} €)`}
+                      {isSubmitting ? t.order_confirming : t.order_confirm_btn}
                     </Button>
                   </div>
                 </form>

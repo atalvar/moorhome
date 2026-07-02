@@ -77,7 +77,7 @@ async function sendReservationEmails({
   const adminHtml = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937;">
       <h2 style="margin-bottom: 8px;">New reservation received</h2>
-      <p>A new reservation has been created.</p>
+      <p>A new reservation has been created.-test</p>
       <p><strong>Reservation ID:</strong> ${reservationId}</p>
       <p><strong>Customer:</strong> ${customerName}</p>
       <p><strong>Email:</strong> ${customerEmail}</p>

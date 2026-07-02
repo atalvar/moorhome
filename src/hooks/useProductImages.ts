@@ -22,6 +22,11 @@ export const useProductImages = (productId: string | undefined) => {
       return data || [];
     },
     enabled: !!productId,
+    staleTime: 60_000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -36,5 +41,10 @@ export const useAllProductImages = () => {
       if (error) throw error;
       return data || [];
     },
+    staleTime: 60_000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 };

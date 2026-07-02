@@ -2,7 +2,7 @@ import { useMemo, useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProducts } from '@/hooks/useProducts';
-import { useAllProductImages, ProductImage } from '@/hooks/useProductImages';
+import { useAllProductImages } from '@/hooks/useProductImages';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -69,6 +69,13 @@ const Admin = () => {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const invalidateAdminQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['reservations'] });
+    queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
+    queryClient.invalidateQueries({ queryKey: ['product-images'] });
+  };
 
   const { data: reservations = [], isLoading: reservationsLoading } = useQuery({
     queryKey: ['reservations'],
@@ -184,9 +191,7 @@ const Admin = () => {
     setForm(emptyForm);
     setEditingId(null);
     setShowForm(false);
-    queryClient.invalidateQueries({ queryKey: ['products'] });
-    queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
-    queryClient.invalidateQueries({ queryKey: ['product-images'] });
+    invalidateAdminQueries();
   };
 
   const handleEdit = (product: any) => {
@@ -245,9 +250,7 @@ const Admin = () => {
       }
 
       toast.success(t.admin_deleted);
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['reservations'] });
-      queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
+      invalidateAdminQueries();
     } catch (err) {
       console.error(err);
       toast.error(t.admin_delete_fail);
@@ -266,9 +269,7 @@ const Admin = () => {
         }
       }
       toast.success(t.admin_order_deleted);
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['reservations'] });
-      queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
+      invalidateAdminQueries();
     } catch (err) {
       console.error(err);
       toast.error(t.admin_delete_fail);
@@ -276,45 +277,56 @@ const Admin = () => {
   };
 
   const handleReturnToSale = async (reservationId: string, items: any[]) => {
-    for (const item of items) {
-      if (item.product_id) {
-        await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
+    try {
+      for (const item of items) {
+        if (item.product_id) {
+          await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
+        }
       }
+      await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
+      await supabase.from('reservations').delete().eq('id', reservationId);
+      toast.success(t.admin_back_sale_success);
+      invalidateAdminQueries();
+    } catch (err) {
+      console.error(err);
+      toast.error(t.admin_delete_fail);
     }
-    await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
-    await supabase.from('reservations').delete().eq('id', reservationId);
-    toast.success(t.admin_back_sale_success);
-    queryClient.invalidateQueries({ queryKey: ['products'] });
-    queryClient.invalidateQueries({ queryKey: ['reservations'] });
   };
 
   const handleReturnItemToSale = async (reservationId: string, item: any, totalItems: number) => {
-    if (item.product_id) {
-      await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
+    try {
+      if (item.product_id) {
+        await supabase.from('products').update({ is_reserved: false }).eq('id', item.product_id);
+      }
+      await supabase.from('reservation_items').delete().eq('id', item.id);
+      if (totalItems <= 1) {
+        await supabase.from('reservations').delete().eq('id', reservationId);
+      }
+      toast.success(`${item.product?.name || t.admin_products} ${t.admin_back_sale_success.toLowerCase()}`);
+      invalidateAdminQueries();
+    } catch (err) {
+      console.error(err);
+      toast.error(t.admin_delete_fail);
     }
-    await supabase.from('reservation_items').delete().eq('id', item.id);
-    if (totalItems <= 1) {
-      await supabase.from('reservations').delete().eq('id', reservationId);
-    }
-    toast.success(`${item.product?.name || t.admin_products} ${t.admin_back_sale_success.toLowerCase()}`);
-    queryClient.invalidateQueries({ queryKey: ['products'] });
-    queryClient.invalidateQueries({ queryKey: ['reservations'] });
   };
 
   const handleDeleteItem = async (reservationId: string, item: any, totalItems: number) => {
-    await supabase.from('reservation_items').delete().eq('id', item.id);
-    if (item.product_id) {
-      await deleteStorageImages(item.product_id);
-      await supabase.from('product_images').delete().eq('product_id', item.product_id);
-      await supabase.from('products').delete().eq('id', item.product_id);
+    try {
+      await supabase.from('reservation_items').delete().eq('id', item.id);
+      if (item.product_id) {
+        await deleteStorageImages(item.product_id);
+        await supabase.from('product_images').delete().eq('product_id', item.product_id);
+        await supabase.from('products').delete().eq('id', item.product_id);
+      }
+      if (totalItems <= 1) {
+        await supabase.from('reservations').delete().eq('id', reservationId);
+      }
+      toast.success(`${item.product?.name || t.admin_products} ${t.admin_deleted.toLowerCase()}`);
+      invalidateAdminQueries();
+    } catch (err) {
+      console.error(err);
+      toast.error(t.admin_delete_fail);
     }
-    if (totalItems <= 1) {
-      await supabase.from('reservations').delete().eq('id', reservationId);
-    }
-    toast.success(`${item.product?.name || t.admin_products} ${t.admin_deleted.toLowerCase()}`);
-    queryClient.invalidateQueries({ queryKey: ['products'] });
-    queryClient.invalidateQueries({ queryKey: ['reservations'] });
-    queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
   };
 
   const CategorySelect = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (

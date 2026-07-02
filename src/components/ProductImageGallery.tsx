@@ -5,9 +5,11 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 interface ProductImageGalleryProps {
   images: string[];
   alt: string;
+  containerClassName?: string;
+  imageClassName?: string;
 }
 
-const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
+const ProductImageGallery = ({ images, alt, containerClassName, imageClassName }: ProductImageGalleryProps) => {
   const [open, setOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -37,13 +39,16 @@ const ProductImageGallery = ({ images, alt }: ProductImageGalleryProps) => {
   return (
     <>
       <div
-        className="aspect-square overflow-hidden bg-muted cursor-pointer relative group"
+        className={`${containerClassName ?? 'aspect-square'} overflow-hidden bg-muted cursor-pointer relative group`}
         onClick={() => { setCurrentIndex(0); setOpen(true); }}
+        style={{ height: '16rem', minHeight: '16rem' }}
       >
         <img
           src={images[0]}
           alt={alt}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+          className={imageClassName ?? 'block h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500'}
+          style={{ height: '100%', width: '100%', objectFit: 'cover', objectPosition: 'center' }}
         />
         {images.length > 1 && (
           <div className="absolute bottom-2 right-2 bg-foreground/70 text-background text-xs px-2 py-1 rounded-full">

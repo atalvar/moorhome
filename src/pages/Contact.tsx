@@ -1,16 +1,40 @@
+import { useState } from 'react';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const Contact = () => {
   const { t } = useLanguage();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success(t.contact_sent);
+    setIsSubmitting(true);
+
+    const form = e.currentTarget;
+    const payload = {
+      name: (form.elements.namedItem('name') as HTMLInputElement | null)?.value?.trim() || '',
+      email: (form.elements.namedItem('email') as HTMLInputElement | null)?.value?.trim() || '',
+      phone: (form.elements.namedItem('phone') as HTMLInputElement | null)?.value?.trim() || '',
+      subject: (form.elements.namedItem('subject') as HTMLInputElement | null)?.value?.trim() || '',
+      message: (form.elements.namedItem('message') as HTMLTextAreaElement | null)?.value?.trim() || '',
+    };
+
+    try {
+      const { error } = await supabase.functions.invoke('contact-form', { body: payload });
+      if (error) throw error;
+
+      form.reset();
+      toast.success(t.contact_sent);
+    } catch {
+      toast.error('Sõnumi saatmine ebaõnnestus. Proovi uuesti.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -117,8 +141,8 @@ const Contact = () => {
                     <Textarea id="message" placeholder={t.contact_message_placeholder} rows={5} required className="rounded-xl" />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full sm:w-auto gradient-warm border-0 text-primary-foreground shadow-medium hover:shadow-elevated transition-all duration-300 hover:-translate-y-0.5">
-                    {t.contact_send}
+                  <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-auto gradient-warm border-0 text-primary-foreground shadow-medium hover:shadow-elevated transition-all duration-300 hover:-translate-y-0.5">
+                    {isSubmitting ? 'Saadan...' : t.contact_send}
                   </Button>
                 </form>
               </div>

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Product } from '@/contexts/ReservationContext';
 import { useReservation } from '@/contexts/ReservationContext';
 import { useProductImages } from '@/hooks/useProductImages';
@@ -41,7 +42,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <div className="group bg-card/80 glass rounded-2xl overflow-hidden border border-border/50 hover:shadow-elevated hover:-translate-y-1 transition-all duration-300">
-      <ProductImageGallery images={allImages} alt={product.name} />
+      <ProductImageGallery
+        images={allImages}
+        alt={product.name}
+        containerClassName="relative h-64 w-full shrink-0"
+        imageClassName="block h-full w-full object-cover object-center"
+      />
       <div className="p-5">
         <span className="text-xs font-semibold text-secondary uppercase tracking-[0.15em]">
           {categoryTranslationKey[product.category] ? t[categoryTranslationKey[product.category]] : product.category}
@@ -86,4 +92,4 @@ const ProductCard = ({ product }: ProductCardProps) => {
   );
 };
 
-export default ProductCard;
+export default memo(ProductCard);

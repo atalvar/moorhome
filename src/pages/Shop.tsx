@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useProducts, useCategories } from '@/hooks/useProducts';
+import { useMemo, useState } from 'react';
+import { useProducts } from '@/hooks/useProducts';
 import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,6 @@ const categoryTranslationKey: Record<string, keyof Translations> = {
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('Kõik');
   const { data: products = [], isLoading } = useProducts();
-  const { data: categories = ['Kõik'] } = useCategories();
   const { t } = useLanguage();
 
   const translateCategory = (cat: string) => {
@@ -24,10 +23,16 @@ const Shop = () => {
     return key ? t[key] : cat;
   };
 
-  const filteredProducts =
-    selectedCategory === 'Kõik'
-      ? products
-      : products.filter((product) => product.category === selectedCategory);
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(products.map((product) => product.category).filter(Boolean)))
+      .sort((a, b) => a.localeCompare(b, 'et'));
+    return ['Kõik', ...uniqueCategories];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === 'Kõik') return products;
+    return products.filter((product) => product.category === selectedCategory);
+  }, [products, selectedCategory]);
 
   return (
     <div className="min-h-screen bg-background">

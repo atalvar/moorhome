@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProducts } from '@/hooks/useProducts';
@@ -47,6 +47,22 @@ const Admin = () => {
 
   const { data: products = [], isLoading: productsLoading } = useProducts(true);
   const { data: allImages = [] } = useAllProductImages();
+  const productImageMap = useMemo(() => {
+    const map = new Map<string, string>();
+    allImages.forEach((img) => {
+      if (!map.has(img.product_id)) {
+        map.set(img.product_id, img.image_url);
+      }
+    });
+    return map;
+  }, [allImages]);
+  const productImageCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    allImages.forEach((img) => {
+      counts.set(img.product_id, (counts.get(img.product_id) || 0) + 1);
+    });
+    return counts;
+  }, [allImages]);
 
   const [form, setForm] = useState<ProductForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -57,26 +73,46 @@ const Admin = () => {
   const { data: reservations = [], isLoading: reservationsLoading } = useQuery({
     queryKey: ['reservations'],
     queryFn: async () => {
-      const { data: res } = await supabase
+      const { data, error } = await supabase
         .from('reservations')
-        .select('*')
+        .select(`
+          id,
+          created_at,
+          customer_name,
+          customer_email,
+          customer_phone,
+          customer_address,
+          reservation_items (
+            id,
+            delivery_method,
+            product_id,
+            product:products (
+              id,
+              name,
+              image,
+              price,
+              sale_price
+            )
+          )
+        `)
         .order('created_at', { ascending: false });
-      if (!res) return [];
-      const withItems = await Promise.all(
-        res.map(async (r) => {
-          const { data: items } = await supabase
-            .from('reservation_items')
-            .select('*, product:products(*)')
-            .eq('reservation_id', r.id);
-          return { ...r, items: items || [] };
-        })
-      );
-      return withItems;
+
+      if (error) throw error;
+
+      return (data || []).map((reservation: any) => ({
+        ...reservation,
+        items: (reservation.reservation_items || []).map((item: any) => ({
+          ...item,
+          product: item.product ?? null,
+        })),
+      }));
     },
     enabled: !!isAdmin,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
 
-  const sortedProducts = [...products].sort((a, b) => a.name.localeCompare(b.name, 'et'));
+  const sortedProducts = useMemo(() => [...products].sort((a, b) => a.name.localeCompare(b.name, 'et')), [products]);
 
   if (loading || roleLoading) {
     return (
@@ -102,10 +138,7 @@ const Admin = () => {
   }
 
   const getProductImages = (productId: string): string => {
-    const imgs = allImages.filter((img) => img.product_id === productId);
-    if (imgs.length > 0) return imgs[0].image_url;
-    const product = products.find((p) => p.id === productId);
-    return product?.image || '/placeholder.svg';
+    return productImageMap.get(productId) || products.find((p) => p.id === productId)?.image || '/placeholder.svg';
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -177,48 +210,69 @@ const Admin = () => {
   };
 
   const deleteStorageImages = async (productId: string) => {
-    const { data: imgs } = await supabase.from('product_images').select('image_url').eq('product_id', productId);
-    if (imgs && imgs.length > 0) {
+    try {
+      const { data: imgs, error } = await supabase.from('product_images').select('image_url').eq('product_id', productId);
+      if (error || !imgs?.length) return;
+
       const paths = imgs
-        .map(img => {
+        .map((img: any) => {
           const parts = img.image_url.split('/product-images/');
           return parts.length > 1 ? parts[parts.length - 1] : null;
         })
         .filter(Boolean) as string[];
+
       if (paths.length > 0) {
         await supabase.storage.from('product-images').remove(paths);
       }
+    } catch {
+      // ignore storage cleanup errors so product deletion can still succeed
     }
   };
 
   const handleDelete = async (id: string) => {
-    await deleteStorageImages(id);
-    await supabase.from('product_images').delete().eq('product_id', id);
-    await supabase.from('reservation_items').delete().eq('product_id', id);
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) toast.error(t.admin_delete_fail);
-    else {
+    try {
+      await Promise.allSettled([
+        supabase.from('product_images').delete().eq('product_id', id),
+        supabase.from('reservation_items').delete().eq('product_id', id),
+      ]);
+      await deleteStorageImages(id);
+
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) {
+        console.error(error);
+        toast.error(t.admin_delete_fail);
+        return;
+      }
+
       toast.success(t.admin_deleted);
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['reservations'] });
       queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
+    } catch (err) {
+      console.error(err);
+      toast.error(t.admin_delete_fail);
     }
   };
 
   const handleDeleteReservation = async (reservationId: string, items: any[]) => {
-    await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
-    await supabase.from('reservations').delete().eq('id', reservationId);
-    for (const item of items) {
-      if (item.product_id) {
-        await deleteStorageImages(item.product_id);
-        await supabase.from('product_images').delete().eq('product_id', item.product_id);
-        await supabase.from('products').delete().eq('id', item.product_id);
+    try {
+      await supabase.from('reservation_items').delete().eq('reservation_id', reservationId);
+      await supabase.from('reservations').delete().eq('id', reservationId);
+      for (const item of items) {
+        if (item.product_id) {
+          await deleteStorageImages(item.product_id);
+          await supabase.from('product_images').delete().eq('product_id', item.product_id);
+          await supabase.from('products').delete().eq('id', item.product_id);
+        }
       }
+      toast.success(t.admin_order_deleted);
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['reservations'] });
+      queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
+    } catch (err) {
+      console.error(err);
+      toast.error(t.admin_delete_fail);
     }
-    toast.success(t.admin_order_deleted);
-    queryClient.invalidateQueries({ queryKey: ['products'] });
-    queryClient.invalidateQueries({ queryKey: ['reservations'] });
-    queryClient.invalidateQueries({ queryKey: ['all-product-images'] });
   };
 
   const handleReturnToSale = async (reservationId: string, items: any[]) => {
@@ -357,7 +411,7 @@ const Admin = () => {
               <div className="space-y-3">
                 {sortedProducts.map((product) => {
                   const thumbUrl = getProductImages(product.id);
-                  const imgCount = allImages.filter((img) => img.product_id === product.id).length;
+                  const imgCount = productImageCounts.get(product.id) || 0;
                   const hasSale = product.sale_price != null && product.sale_price < product.price;
                   return (
                     <div key={product.id}>

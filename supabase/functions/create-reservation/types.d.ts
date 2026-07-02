@@ -1,5 +1,3 @@
-/// <reference types="vite/client" />
-
 declare module "npm:nodemailer@6.9.2" {
   const nodemailer: {
     createTransport(config: any): {

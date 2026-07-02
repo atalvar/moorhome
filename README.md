@@ -60,6 +60,31 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Reservation email setup
+
+Reservations now trigger a confirmation email from the Supabase edge function.
+
+Set these environment variables in your Supabase project for the edge function:
+
+- GMAIL_USER
+- GMAIL_APP_PASSWORD
+- GMAIL_ADMIN_EMAIL (optional)
+
+Use a Gmail account with an app password. The email is sent to the customer and optionally to the admin address when configured.
+
+## Admin account bootstrap
+
+You can create an admin account with the bootstrap edge function.
+
+1. Set a secret in Supabase Edge Functions secrets:
+   - BOOTSTRAP_ADMIN_SECRET
+2. Deploy the function:
+   - `supabase functions deploy bootstrap-admin`
+3. Call it with a POST request to:
+   - `https://<project-ref>.supabase.co/functions/v1/bootstrap-admin`
+4. Payload:
+   - `{ "email": "admin@example.com", "password": "StrongPassword123!", "admin_secret": "your-secret" }`
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.

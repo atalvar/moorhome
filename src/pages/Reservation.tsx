@@ -1,16 +1,59 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useReservation, DeliveryMethod, CustomerInfo } from '@/contexts/ReservationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Trash2, ShoppingBag, ArrowLeft, Truck, Store, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface AdsAddressResult {
+  adob_id?: string;
+  pikkaadress?: string;
+  taisaadress?: string;
+  liikluspind?: string;
+  aadress_nr?: string;
+  kort_nr?: string;
+  asustusyksus?: string;
+  omavalitsus?: string;
+  maakond?: string;
+  sihtnumber?: string;
+  onkort?: string;
+}
+
+interface AdsResponse {
+  addresses?: AdsAddressResult[];
+}
+
+interface AddressSuggestion {
+  id: number;
+  full: string;
+  primary: string;
+  secondary: string;
+}
+
+const buildAddressQueryVariants = (query: string) => {
+  const variants = new Set<string>();
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  variants.add(trimmed);
+
+  if (trimmed.includes('-')) {
+    variants.add(trimmed.replace(/-/g, ' '));
+  }
+
+  const apartmentSplit = trimmed.match(/^(.*\d)\s*[-/]\s*\d+$/);
+  if (apartmentSplit?.[1]) {
+    variants.add(apartmentSplit[1].trim());
+  }
+
+  return Array.from(variants).filter((value) => value.length >= 3);
+};
 
 const Reservation = () => {
   const { reservedItems, removeFromReservation, deliveryMethod, setDeliveryMethod, confirmReservation } = useReservation();
@@ -26,10 +69,98 @@ const Reservation = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+  const [isAddressLoading, setIsAddressLoading] = useState(false);
 
   const needsAddress = deliveryMethod === 'delivery';
+  const addressQuery = customerInfo.address?.trim() || '';
   const itemCount = reservedItems.length;
   const total = reservedItems.reduce((sum, item) => sum + (item.sale_price != null && item.sale_price < item.price ? item.sale_price : item.price), 0);
+
+  const formatAddressSuggestion = (item: AdsAddressResult): AddressSuggestion => {
+    const streetPart = [item.liikluspind, item.aadress_nr].filter(Boolean).join(' ').trim();
+    const apartmentPart = item.kort_nr ? `korter ${item.kort_nr}` : '';
+    const primary = [streetPart, apartmentPart].filter(Boolean).join(', ').trim();
+    const secondary = [item.asustusyksus, item.omavalitsus, item.maakond, item.sihtnumber]
+      .filter(Boolean)
+      .join(', ');
+    const fullAddress = item.taisaadress || item.pikkaadress || [primary, secondary].filter(Boolean).join(', ');
+
+    return {
+      id: Number(item.adob_id || 0),
+      full: fullAddress,
+      primary: primary || (item.pikkaadress || fullAddress),
+      secondary: secondary || (item.pikkaadress || fullAddress),
+    };
+  };
+
+  const uniqueAddressSuggestions = useMemo(() => {
+    const seen = new Set<string>();
+    return addressSuggestions.filter((item) => {
+      if (seen.has(item.full)) return false;
+      seen.add(item.full);
+      return true;
+    });
+  }, [addressSuggestions]);
+
+  useEffect(() => {
+    if (!needsAddress || addressQuery.length < 3) {
+      setAddressSuggestions([]);
+      setIsAddressLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(async () => {
+      try {
+        setIsAddressLoading(true);
+        const queryVariants = buildAddressQueryVariants(addressQuery);
+        const responses = await Promise.all(
+          queryVariants.map((query) =>
+            fetch(
+              `https://inaadress.maaamet.ee/inaadress/gazetteer?results=10&address=${encodeURIComponent(query)}`,
+              { signal: controller.signal },
+            ),
+          ),
+        );
+
+        const allData = await Promise.all(
+          responses
+            .filter((response) => response.ok)
+            .map((response) => response.json() as Promise<AdsResponse>),
+        );
+
+        const merged = allData.flatMap((result) => result.addresses || []);
+        const mapped = merged.map(formatAddressSuggestion).filter((item) => item.full.trim().length > 0);
+        const detailed = merged
+          .filter((item) => Boolean(item.aadress_nr) || item.onkort === '1' || Boolean(item.kort_nr))
+          .map(formatAddressSuggestion);
+
+        setAddressSuggestions((detailed.length > 0 ? detailed : mapped).slice(0, 8));
+      } catch {
+        if (!controller.signal.aborted) {
+          setAddressSuggestions([]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsAddressLoading(false);
+        }
+      }
+    }, 320);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [addressQuery, needsAddress]);
+
+  useEffect(() => {
+    if (!needsAddress) {
+      setShowAddressDropdown(false);
+      setAddressSuggestions([]);
+    }
+  }, [needsAddress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,10 +335,64 @@ const Reservation = () => {
                     <Label htmlFor="phone">{t.order_phone}</Label>
                     <Input id="phone" type="tel" value={customerInfo.phone} onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })} placeholder="+372 ..." required />
                   </div>
+                  {!needsAddress && (
+                    <div className="rounded-md border border-border bg-muted/30 px-3 py-2">
+                      <p className="text-sm text-foreground">
+                        <span className="font-medium">Tarne:</span> {t.order_pickup}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">{t.address_short}</p>
+                    </div>
+                  )}
                   {needsAddress && (
-                    <div>
+                    <div className="relative">
                       <Label htmlFor="address">{t.order_address}</Label>
-                      <Textarea id="address" value={customerInfo.address} onChange={(e) => setCustomerInfo({ ...customerInfo, address: e.target.value })} placeholder={t.order_address_placeholder} rows={3} required />
+                      <Input
+                        id="address"
+                        value={customerInfo.address}
+                        onChange={(e) => {
+                          setCustomerInfo({ ...customerInfo, address: e.target.value });
+                          setShowAddressDropdown(true);
+                        }}
+                        onFocus={() => setShowAddressDropdown(true)}
+                        onBlur={() => setTimeout(() => setShowAddressDropdown(false), 120)}
+                        placeholder={t.order_address_placeholder}
+                        autoComplete="street-address"
+                        required
+                      />
+
+                      {showAddressDropdown && (addressQuery.length > 0 || isAddressLoading || uniqueAddressSuggestions.length > 0) && (
+                        <div className="absolute z-30 mt-1 w-full rounded-md border border-border bg-popover shadow-medium max-h-64 overflow-auto">
+                          {addressQuery.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setShowAddressDropdown(false)}
+                              className="w-full text-left px-3 py-2 hover:bg-accent transition-colors border-b border-border/40"
+                            >
+                              <div className="text-sm font-medium text-foreground">Kasuta sisestatud aadressi</div>
+                              <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{customerInfo.address}</div>
+                            </button>
+                          )}
+
+                          {isAddressLoading && (
+                            <div className="px-3 py-2 text-sm text-muted-foreground">Otsin aadresse...</div>
+                          )}
+
+                          {!isAddressLoading && uniqueAddressSuggestions.map((suggestion) => (
+                            <button
+                              type="button"
+                              key={suggestion.id}
+                              onClick={() => {
+                                setCustomerInfo({ ...customerInfo, address: suggestion.full });
+                                setShowAddressDropdown(false);
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-accent transition-colors border-b last:border-b-0 border-border/40"
+                            >
+                              <div className="text-sm font-medium text-foreground">{suggestion.primary}</div>
+                              <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{suggestion.secondary}</div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                   <div className="pt-4 border-t border-border">

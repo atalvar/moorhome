@@ -90,8 +90,28 @@ const Shop = () => {
 
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <div className="flex justify-end mb-5">
-            <div className="w-full sm:w-72">
+          <div className="mb-10 flex items-center gap-4">
+            <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
+              <div className="flex gap-2 min-w-max">
+                {categories.map((category) => (
+                  <Button
+                    key={category}
+                    variant={selectedCategory === category ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className={`transition-all duration-300 rounded-full px-5 ${
+                      selectedCategory === category
+                        ? 'gradient-warm border-0 text-primary-foreground shadow-soft'
+                        : 'border-2 hover:border-primary'
+                    }`}
+                  >
+                    {translateCategory(category)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-56 sm:w-72 shrink-0">
               <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sorteeri" />
@@ -105,24 +125,6 @@ const Shop = () => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 mb-10 justify-center">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className={`transition-all duration-300 rounded-full px-5 ${
-                  selectedCategory === category
-                    ? 'gradient-warm border-0 text-primary-foreground shadow-soft'
-                    : 'border-2 hover:border-primary'
-                }`}
-              >
-                {translateCategory(category)}
-              </Button>
-            ))}
           </div>
 
           {isLoading ? (

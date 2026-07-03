@@ -425,7 +425,7 @@ const Admin = () => {
                   {form.category === 'Soodus -%' && (
                     <div>
                       <Label>{t.admin_sale_price}</Label>
-                      <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder={t.admin_sale_placeholder || '0.00'} />
+                      <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder="0.00" />
                     </div>
                   )}
                   <div className="sm:col-span-2">
@@ -564,7 +564,7 @@ const Admin = () => {
                             {form.category === 'Soodus -%' && (
                               <div>
                                 <Label>{t.admin_sale_price}</Label>
-                                <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder={t.admin_sale_placeholder || '0.00'} />
+                                <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder="0.00" />
                               </div>
                             )}
                             <div className="sm:col-span-2">

@@ -55,6 +55,8 @@ const Reservation = () => {
 
   const handleSuccessClose = () => {
     setShowSuccess(false);
+    queryClient.removeQueries({ queryKey: ['products'] });
+    queryClient.removeQueries({ queryKey: ['categories'] });
     navigate('/pood');
   };
 

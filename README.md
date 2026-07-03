@@ -72,6 +72,10 @@ Set these environment variables in your Supabase project for the edge function:
 
 Use a Gmail account with an app password. The email is sent to the customer and optionally to the admin address when configured.
 
+Notes:
+- `GMAIL_ADMIN_EMAIL` can contain one or more recipients separated by commas, semicolons, or spaces.
+- If `GMAIL_ADMIN_EMAIL` is not set, reservation admin notifications fall back to `GMAIL_FROM_ADDRESS` (or `GMAIL_USER`).
+
 ## Admin account bootstrap
 
 You can create an admin account with the bootstrap edge function.

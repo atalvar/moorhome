@@ -1,3 +1,5 @@
+/// <reference path="./types.d.ts" />
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import nodemailer from "npm:nodemailer@6.9.2";
 
@@ -19,7 +21,7 @@ function getConfiguredAdminEmails() {
   if (!configured) return [];
 
   return configured
-    .split(',')
+    .split(/[;,\s]+/)
     .map((email) => email.trim())
     .filter(Boolean);
 }
@@ -45,6 +47,9 @@ async function sendReservationEmails({
   const fromName = Deno.env.get("GMAIL_FROM_NAME") || "Moorhome";
   const fromAddress = Deno.env.get("GMAIL_FROM_ADDRESS") || gmailUser;
   const replyToAddress = Deno.env.get("GMAIL_REPLY_TO") || adminEmails[0] || gmailUser;
+  const adminRecipients = adminEmails.length > 0
+    ? adminEmails
+    : (fromAddress ? [fromAddress] : []);
 
   if (!gmailUser || !gmailAppPassword) {
     console.info("Reservation email skipped because Gmail SMTP is not configured.");
@@ -77,7 +82,7 @@ async function sendReservationEmails({
   const adminHtml = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937;">
       <h2 style="margin-bottom: 8px;">New reservation received</h2>
-      <p>A new reservation has been created.-test</p>
+      <p>A new reservation has been created.</p>
       <p><strong>Reservation ID:</strong> ${reservationId}</p>
       <p><strong>Customer:</strong> ${customerName}</p>
       <p><strong>Email:</strong> ${customerEmail}</p>
@@ -106,19 +111,32 @@ async function sendReservationEmails({
     html: customerHtml,
   });
 
-  if (adminEmails.length > 0) {
-    const uniqueAdminRecipients = adminEmails.filter((email) => email.toLowerCase() !== customerEmail.toLowerCase());
+  if (adminRecipients.length > 0) {
+    const uniqueRecipients = Array.from(new Set(adminRecipients.map((email) => email.toLowerCase())));
+    const failedRecipients: string[] = [];
 
-    if (uniqueAdminRecipients.length > 0) {
-      await transporter.sendMail({
-        from: `${fromName} <${fromAddress}>`,
-        replyTo: replyToAddress,
-        to: uniqueAdminRecipients,
-        subject: `New reservation received #${reservationId}`,
-        text: adminText,
-        html: adminHtml,
-      });
+    for (const recipient of uniqueRecipients) {
+      try {
+        await transporter.sendMail({
+          from: `${fromName} <${fromAddress}>`,
+          replyTo: replyToAddress,
+          to: recipient,
+          subject: `New reservation received #${reservationId}`,
+          text: adminText,
+          html: adminHtml,
+        });
+        console.info(`Admin reservation email sent to ${recipient}`);
+      } catch (adminEmailError) {
+        failedRecipients.push(recipient);
+        console.error(`Failed to send admin reservation email to ${recipient}:`, adminEmailError);
+      }
     }
+
+    if (failedRecipients.length === uniqueRecipients.length) {
+      throw new Error("Failed to send reservation email to all admin recipients.");
+    }
+  } else {
+    console.info("Admin reservation email skipped because no recipient was configured.");
   }
 
   return true;

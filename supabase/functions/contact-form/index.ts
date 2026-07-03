@@ -1,3 +1,5 @@
+/// <reference path="../create-reservation/types.d.ts" />
+
 import nodemailer from "npm:nodemailer@6.9.2";
 
 declare const Deno: {
@@ -17,7 +19,7 @@ function getConfiguredAdminEmails() {
   if (!configured) return [];
 
   return configured
-    .split(",")
+    .split(/[;,\s]+/)
     .map((email) => email.trim())
     .filter(Boolean);
 }

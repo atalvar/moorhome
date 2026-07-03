@@ -6,7 +6,7 @@ const QUERY_OPTIONS = {
   staleTime: 60_000,
   gcTime: 10 * 60 * 1000,
   refetchOnWindowFocus: false,
-  refetchOnMount: false,
+  refetchOnMount: true,
   refetchOnReconnect: false,
   retry: false,
 };

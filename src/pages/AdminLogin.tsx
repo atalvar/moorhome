@@ -12,12 +12,26 @@ const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: boolean; password?: boolean }>({});
   const { signIn } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const nextErrors = {
+      email: !email.trim(),
+      password: !password.trim(),
+    };
+
+    if (nextErrors.email || nextErrors.password) {
+      setFieldErrors(nextErrors);
+      toast.error(t.validation_required_fields);
+      return;
+    }
+
+    setFieldErrors({});
     setIsLoading(true);
 
     const { error } = await signIn(email, password);
@@ -43,12 +57,32 @@ const AdminLogin = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4 bg-card p-6 rounded-lg border border-border">
           <div>
-            <Label htmlFor="email">{t.login_email}</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@email.ee" required />
+            <Label htmlFor="email">{t.login_email} <span className="text-destructive">*</span></Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: false }));
+              }}
+              placeholder="admin@email.ee"
+              className={fieldErrors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
+            />
           </div>
           <div>
-            <Label htmlFor="password">{t.login_password}</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={6} />
+            <Label htmlFor="password">{t.login_password} <span className="text-destructive">*</span></Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: false }));
+              }}
+              placeholder="••••••••"
+              className={fieldErrors.password ? 'border-destructive focus-visible:ring-destructive' : ''}
+            />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? t.login_loading : t.login_button}

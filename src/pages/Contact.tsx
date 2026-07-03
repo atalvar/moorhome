@@ -7,31 +7,68 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+}
+
+interface ContactFieldErrors {
+  name?: boolean;
+  email?: boolean;
+  subject?: boolean;
+  message?: boolean;
+}
+
 const Contact = () => {
   const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<ContactFormData>({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
+  const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const nextErrors: ContactFieldErrors = {
+      name: !formData.name.trim(),
+      email: !formData.email.trim(),
+      subject: !formData.subject.trim(),
+      message: !formData.message.trim(),
+    };
+
+    if (Object.values(nextErrors).some(Boolean)) {
+      setFieldErrors(nextErrors);
+      toast.error(t.validation_required_fields);
+      return;
+    }
+
+    setFieldErrors({});
     setIsSubmitting(true);
 
-    const form = e.currentTarget;
     const payload = {
-      name: (form.elements.namedItem('name') as HTMLInputElement | null)?.value?.trim() || '',
-      email: (form.elements.namedItem('email') as HTMLInputElement | null)?.value?.trim() || '',
-      phone: (form.elements.namedItem('phone') as HTMLInputElement | null)?.value?.trim() || '',
-      subject: (form.elements.namedItem('subject') as HTMLInputElement | null)?.value?.trim() || '',
-      message: (form.elements.namedItem('message') as HTMLTextAreaElement | null)?.value?.trim() || '',
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      subject: formData.subject.trim(),
+      message: formData.message.trim(),
     };
 
     try {
       const { error } = await supabase.functions.invoke('contact-form', { body: payload });
       if (error) throw error;
 
-      form.reset();
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
       toast.success(t.contact_sent);
     } catch {
-      toast.error('Sõnumi saatmine ebaõnnestus. Proovi uuesti.');
+      toast.error(t.contact_send_error);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,15 +145,35 @@ const Contact = () => {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                        {t.contact_name}
+                        {t.contact_name} <span className="text-destructive">*</span>
                       </label>
-                      <Input id="name" type="text" placeholder={t.contact_your_name} required className="rounded-xl" />
+                      <Input
+                        id="name"
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => {
+                          setFormData((prev) => ({ ...prev, name: e.target.value }));
+                          if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: false }));
+                        }}
+                        placeholder={t.contact_your_name}
+                        className={`rounded-xl ${fieldErrors.name ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                      />
                     </div>
                     <div>
                       <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                        {t.contact_email}
+                        {t.contact_email} <span className="text-destructive">*</span>
                       </label>
-                      <Input id="email" type="email" placeholder={t.contact_your_email} required className="rounded-xl" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => {
+                          setFormData((prev) => ({ ...prev, email: e.target.value }));
+                          if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: false }));
+                        }}
+                        placeholder={t.contact_your_email}
+                        className={`rounded-xl ${fieldErrors.email ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                      />
                     </div>
                   </div>
 
@@ -124,21 +181,48 @@ const Contact = () => {
                     <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
                       {t.contact_phone_opt}
                     </label>
-                    <Input id="phone" type="tel" placeholder="+372 ..." className="rounded-xl" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                      placeholder="+372 ..."
+                      className="rounded-xl"
+                    />
                   </div>
 
                   <div>
                     <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
-                      {t.contact_subject}
+                      {t.contact_subject} <span className="text-destructive">*</span>
                     </label>
-                    <Input id="subject" type="text" placeholder={t.contact_subject_placeholder} required className="rounded-xl" />
+                    <Input
+                      id="subject"
+                      type="text"
+                      value={formData.subject}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, subject: e.target.value }));
+                        if (fieldErrors.subject) setFieldErrors((prev) => ({ ...prev, subject: false }));
+                      }}
+                      placeholder={t.contact_subject_placeholder}
+                      className={`rounded-xl ${fieldErrors.subject ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                    />
                   </div>
 
                   <div>
                     <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-                      {t.contact_message}
+                      {t.contact_message} <span className="text-destructive">*</span>
                     </label>
-                    <Textarea id="message" placeholder={t.contact_message_placeholder} rows={5} required className="rounded-xl" />
+                    <Textarea
+                      id="message"
+                      value={formData.message}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, message: e.target.value }));
+                        if (fieldErrors.message) setFieldErrors((prev) => ({ ...prev, message: false }));
+                      }}
+                      placeholder={t.contact_message_placeholder}
+                      rows={5}
+                      className={`rounded-xl ${fieldErrors.message ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                    />
                   </div>
 
                   <Button type="submit" size="lg" disabled={isSubmitting} className="w-full sm:w-auto gradient-warm border-0 text-primary-foreground shadow-medium hover:shadow-elevated transition-all duration-300 hover:-translate-y-0.5">

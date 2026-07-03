@@ -69,6 +69,7 @@ const Reservation = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ name?: boolean; email?: boolean; phone?: boolean; address?: boolean }>({});
   const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -165,10 +166,20 @@ const Reservation = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (needsAddress && !customerInfo.address?.trim()) {
-      toast.error(t.order_address_required);
+    const nextErrors = {
+      name: !customerInfo.name.trim(),
+      email: !customerInfo.email.trim(),
+      phone: !customerInfo.phone.trim(),
+      address: needsAddress ? !customerInfo.address?.trim() : false,
+    };
+
+    if (nextErrors.name || nextErrors.email || nextErrors.phone || nextErrors.address) {
+      setFieldErrors(nextErrors);
+      toast.error(t.validation_required_fields);
       return;
     }
+
+    setFieldErrors({});
 
     setIsSubmitting(true);
     const success = await confirmReservation(customerInfo);
@@ -324,16 +335,45 @@ const Reservation = () => {
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">{t.order_confirm}</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="name">{t.order_name}</Label>
-                    <Input id="name" value={customerInfo.name} onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })} placeholder={t.contact_your_name} required />
+                    <Label htmlFor="name">{t.order_name} <span className="text-destructive">*</span></Label>
+                    <Input
+                      id="name"
+                      value={customerInfo.name}
+                      onChange={(e) => {
+                        setCustomerInfo({ ...customerInfo, name: e.target.value });
+                        if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: false }));
+                      }}
+                      placeholder={t.contact_your_name}
+                      className={fieldErrors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="email">{t.order_email}</Label>
-                    <Input id="email" type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })} placeholder={t.contact_your_email} required />
+                    <Label htmlFor="email">{t.order_email} <span className="text-destructive">*</span></Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={customerInfo.email}
+                      onChange={(e) => {
+                        setCustomerInfo({ ...customerInfo, email: e.target.value });
+                        if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: false }));
+                      }}
+                      placeholder={t.contact_your_email}
+                      className={fieldErrors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="phone">{t.order_phone}</Label>
-                    <Input id="phone" type="tel" value={customerInfo.phone} onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })} placeholder="+372 ..." required />
+                    <Label htmlFor="phone">{t.order_phone} <span className="text-destructive">*</span></Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={customerInfo.phone}
+                      onChange={(e) => {
+                        setCustomerInfo({ ...customerInfo, phone: e.target.value });
+                        if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: false }));
+                      }}
+                      placeholder="+372 ..."
+                      className={fieldErrors.phone ? 'border-destructive focus-visible:ring-destructive' : ''}
+                    />
                   </div>
                   {!needsAddress && (
                     <div className="rounded-md border border-border bg-muted/30 px-3 py-2">
@@ -345,19 +385,20 @@ const Reservation = () => {
                   )}
                   {needsAddress && (
                     <div className="relative">
-                      <Label htmlFor="address">{t.order_address}</Label>
+                      <Label htmlFor="address">{t.order_address} <span className="text-destructive">*</span></Label>
                       <Input
                         id="address"
                         value={customerInfo.address}
                         onChange={(e) => {
                           setCustomerInfo({ ...customerInfo, address: e.target.value });
                           setShowAddressDropdown(true);
+                          if (fieldErrors.address) setFieldErrors((prev) => ({ ...prev, address: false }));
                         }}
                         onFocus={() => setShowAddressDropdown(true)}
                         onBlur={() => setTimeout(() => setShowAddressDropdown(false), 120)}
                         placeholder={t.order_address_placeholder}
                         autoComplete="street-address"
-                        required
+                        className={fieldErrors.address ? 'border-destructive focus-visible:ring-destructive' : ''}
                       />
 
                       {showAddressDropdown && (addressQuery.length > 0 || isAddressLoading || uniqueAddressSuggestions.length > 0) && (
@@ -368,13 +409,13 @@ const Reservation = () => {
                               onClick={() => setShowAddressDropdown(false)}
                               className="w-full text-left px-3 py-2 hover:bg-accent transition-colors border-b border-border/40"
                             >
-                              <div className="text-sm font-medium text-foreground">Kasuta sisestatud aadressi</div>
+                              <div className="text-sm font-medium text-foreground">{t.order_use_typed_address}</div>
                               <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{customerInfo.address}</div>
                             </button>
                           )}
 
                           {isAddressLoading && (
-                            <div className="px-3 py-2 text-sm text-muted-foreground">Otsin aadresse...</div>
+                            <div className="px-3 py-2 text-sm text-muted-foreground">{t.order_searching_addresses}</div>
                           )}
 
                           {!isAddressLoading && uniqueAddressSuggestions.map((suggestion) => (

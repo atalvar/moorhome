@@ -67,12 +67,13 @@ const translations = {
     contact_name: "Nimi",
     contact_your_name: "Sinu nimi",
     contact_your_email: "sinu@email.ee",
-    contact_phone_opt: "Telefon (valikuline)",
+    contact_phone_opt: "Telefon",
     contact_subject: "Teema",
     contact_subject_placeholder: "Milles saame aidata?",
     contact_message: "Sõnum",
     contact_message_placeholder: "Kirjelda oma soovi...",
     contact_sent: "Sõnum saadetud! Võtame teiega peagi ühendust.",
+    contact_send_error: "Sõnumi saatmine ebaõnnestus. Proovi uuesti.",
 
     // Product card
     product_buy: "Osta",
@@ -94,11 +95,11 @@ const translations = {
     order_delivery: "Kättetoimetamise viis:",
     order_pickup: "Tulen poodi järgi",
     order_delivery_opt: "Kohaletoimetamine",
-    order_name: "Nimi *",
-    order_email: "E-post *",
-    order_phone: "Telefon *",
-    order_address: "Kohaletoimetamise aadress *",
-    order_address_placeholder: "Täisaadress koos postiindeksiga",
+    order_name: "Nimi",
+    order_email: "E-post",
+    order_phone: "Telefon",
+    order_address: "Kohaletoimetamise aadress",
+    order_address_placeholder: "Sisestage aadress",
     order_total: "Kokku",
     order_after: "Arve saadetakse Teie e-postile pärast tellimuse kättesaamist.",
     order_confirming: "Kinnitamine...",
@@ -106,6 +107,11 @@ const translations = {
     order_continue: "Jätka sirvimist",
     order_error: "Viga tellimuse tegemisel. Palun proovi uuesti.",
     order_address_required: "Palun sisesta kohaletoimetamise aadress",
+    order_use_typed_address: "Kasuta sisestatud aadressi",
+    order_searching_addresses: "Otsin aadresse...",
+
+    // Validation
+    validation_required_fields: "Palun täida kõik kohustuslikud väljad",
 
     // Admin
     admin_products: "Tooted",
@@ -256,6 +262,7 @@ const translations = {
     contact_message: "Message",
     contact_message_placeholder: "Describe your request...",
     contact_sent: "Message sent! We will get back to you soon.",
+    contact_send_error: "Failed to send message. Please try again.",
 
     // Product card
     product_buy: "Buy",
@@ -277,10 +284,10 @@ const translations = {
     order_delivery: "Delivery method:",
     order_pickup: "Pick up from store",
     order_delivery_opt: "Home delivery",
-    order_name: "Name *",
-    order_email: "Email *",
-    order_phone: "Phone *",
-    order_address: "Delivery address *",
+    order_name: "Name",
+    order_email: "Email",
+    order_phone: "Phone",
+    order_address: "Delivery address",
     order_address_placeholder: "Full address with postal code",
     order_total: "Total",
     order_after: "An invoice will be sent to your email after order confirmation.",
@@ -289,6 +296,11 @@ const translations = {
     order_continue: "Continue browsing",
     order_error: "Error placing order. Please try again.",
     order_address_required: "Please enter a delivery address",
+    order_use_typed_address: "Use typed address",
+    order_searching_addresses: "Searching addresses...",
+
+    // Validation
+    validation_required_fields: "Please fill in all required fields",
 
     // Admin
     admin_products: "Products",

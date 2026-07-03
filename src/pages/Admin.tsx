@@ -169,7 +169,7 @@ const Admin = () => {
 
     if (Object.values(nextErrors).some(Boolean)) {
       setFieldErrors(nextErrors);
-      toast.error('Palun täida kõik kohustuslikud väljad');
+      toast.error(t.validation_required_fields);
       return;
     }
 

@@ -46,7 +46,9 @@ async function sendReservationEmails({
   const gmailAppPassword = Deno.env.get("GMAIL_APP_PASSWORD");
   const adminEmails = getConfiguredAdminEmails();
   const fromName = Deno.env.get("GMAIL_FROM_NAME") || "Moorhome";
-  const fromAddress = Deno.env.get("GMAIL_FROM_ADDRESS") || gmailUser;
+  const configuredFromAddress = Deno.env.get("GMAIL_FROM_ADDRESS");
+  // Gmail SMTP deliverability is better when the From mailbox matches the authenticated account.
+  const fromAddress = gmailUser;
   const replyToAddress = Deno.env.get("GMAIL_REPLY_TO") || adminEmails[0] || gmailUser;
   const adminRecipients = adminEmails.length > 0
     ? adminEmails
@@ -105,9 +107,12 @@ async function sendReservationEmails({
 
   await transporter.sendMail({
     from: `${fromName} <${fromAddress}>`,
-    replyTo: replyToAddress,
+    replyTo: configuredFromAddress || replyToAddress,
+    envelope: {
+      from: gmailUser,
+      to: customerEmail,
+    },
     to: customerEmail,
-    bcc: adminRecipients.length > 0 ? adminRecipients : undefined,
     subject: `Reservation confirmation #${reservationId}`,
     text: customerText,
     html: customerHtml,

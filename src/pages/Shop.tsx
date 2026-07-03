@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 
 const categoryTranslationKey: Record<string, keyof Translations> = {
@@ -12,8 +13,11 @@ const categoryTranslationKey: Record<string, keyof Translations> = {
   'Soodus -%': 'shop_cat_sale',
 };
 
+type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
+
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('Kõik');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   const { data: products = [], isLoading } = useProducts();
   const { t } = useLanguage();
 
@@ -33,6 +37,38 @@ const Shop = () => {
     if (selectedCategory === 'Kõik') return products;
     return products.filter((product) => product.category === selectedCategory);
   }, [products, selectedCategory]);
+
+  const sortedProducts = useMemo(() => {
+    const getEffectivePrice = (product: (typeof filteredProducts)[number]) =>
+      product.sale_price != null && product.sale_price < product.price ? product.sale_price : product.price;
+
+    const sorted = [...filteredProducts];
+
+    switch (sortBy) {
+      case 'price-asc':
+        sorted.sort((a, b) => getEffectivePrice(a) - getEffectivePrice(b));
+        break;
+      case 'price-desc':
+        sorted.sort((a, b) => getEffectivePrice(b) - getEffectivePrice(a));
+        break;
+      case 'name-asc':
+        sorted.sort((a, b) => a.name.localeCompare(b.name, 'et'));
+        break;
+      case 'name-desc':
+        sorted.sort((a, b) => b.name.localeCompare(a.name, 'et'));
+        break;
+      case 'newest':
+      default:
+        sorted.sort((a, b) => {
+          const aDate = Date.parse((a as { created_at?: string }).created_at || '');
+          const bDate = Date.parse((b as { created_at?: string }).created_at || '');
+          return (Number.isNaN(bDate) ? 0 : bDate) - (Number.isNaN(aDate) ? 0 : aDate);
+        });
+        break;
+    }
+
+    return sorted;
+  }, [filteredProducts, sortBy]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,6 +90,23 @@ const Shop = () => {
 
       <section className="py-12">
         <div className="container mx-auto px-4">
+          <div className="flex justify-end mb-5">
+            <div className="w-full sm:w-72">
+              <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sorteeri" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Uuemad tooted eespool</SelectItem>
+                  <SelectItem value="price-asc">Hinna järgi kasvavalt</SelectItem>
+                  <SelectItem value="price-desc">Hinna järgi kahanevalt</SelectItem>
+                  <SelectItem value="name-asc">Tähestikuliselt A-Z</SelectItem>
+                  <SelectItem value="name-desc">Tähestikuliselt Z-A</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-2 mb-10 justify-center">
             {categories.map((category) => (
               <Button
@@ -78,7 +131,7 @@ const Shop = () => {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product, index) => (
+              {sortedProducts.map((product, index) => (
                 <div
                   key={product.id}
                   className="animate-fade-in h-[33rem] min-h-[33rem] max-h-[33rem]"
@@ -90,7 +143,7 @@ const Shop = () => {
             </div>
           )}
 
-          {!isLoading && filteredProducts.length === 0 && (
+          {!isLoading && sortedProducts.length === 0 && (
             <div className="text-center py-16">
               <p className="text-muted-foreground text-lg">
                 {products.length === 0 ? t.shop_empty_all : t.shop_empty_cat}

@@ -22,8 +22,9 @@ function getConfiguredAdminEmails() {
 
   return configured
     .split(/[;,\s]+/)
-    .map((email) => email.trim())
-    .filter(Boolean);
+    .map((token) => token.trim())
+    .map((token) => token.replace(/^[\[{(<\"'\s]+/, "").replace(/[\]})>\"'\s]+$/, ""))
+    .filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
 }
 
 async function sendReservationEmails({
@@ -106,10 +107,15 @@ async function sendReservationEmails({
     from: `${fromName} <${fromAddress}>`,
     replyTo: replyToAddress,
     to: customerEmail,
+    bcc: adminRecipients.length > 0 ? adminRecipients : undefined,
     subject: `Reservation confirmation #${reservationId}`,
     text: customerText,
     html: customerHtml,
   });
+
+  if (adminRecipients.length > 0) {
+    console.info("Admin recipients resolved for reservation notification:", adminRecipients);
+  }
 
   if (adminRecipients.length > 0) {
     const uniqueRecipients = Array.from(new Set(adminRecipients.map((email) => email.toLowerCase())));

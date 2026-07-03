@@ -20,8 +20,9 @@ function getConfiguredAdminEmails() {
 
   return configured
     .split(/[;,\s]+/)
-    .map((email) => email.trim())
-    .filter(Boolean);
+    .map((token) => token.trim())
+    .map((token) => token.replace(/^[\[{(<\"'\s]+/, "").replace(/[\]})>\"'\s]+$/, ""))
+    .filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
 }
 
 async function sendContactEmail({

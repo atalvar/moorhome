@@ -60,6 +60,30 @@ const Reservation = () => {
     navigate('/pood');
   };
 
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) handleSuccessClose(); }}>
+          <DialogContent className="max-w-md text-center">
+            <div className="flex flex-col items-center py-6">
+              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              </div>
+              <h2 className="font-serif text-2xl font-bold text-foreground mb-3">
+                {t.order_confirmed}
+              </h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed" dangerouslySetInnerHTML={{ __html: t.order_confirmed_msg }} />
+              <Button onClick={handleSuccessClose} size="lg" className="w-full gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                {t.order_back_shop}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
+
   if (reservedItems.length === 0 && !showSuccess) {
     return (
       <div className="min-h-screen bg-background">
@@ -82,24 +106,6 @@ const Reservation = () => {
             </Link>
           </div>
         </div>
-
-        <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) handleSuccessClose(); }}>
-          <DialogContent className="max-w-md text-center">
-            <div className="flex flex-col items-center py-6">
-              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-                <CheckCircle2 className="h-12 w-12 text-green-600" />
-              </div>
-              <h2 className="font-serif text-2xl font-bold text-foreground mb-3">
-                {t.order_confirmed}
-              </h2>
-              <p className="text-muted-foreground mb-6 leading-relaxed" dangerouslySetInnerHTML={{ __html: t.order_confirmed_msg }} />
-              <Button onClick={handleSuccessClose} size="lg" className="w-full gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                {t.order_back_shop}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     );
   }
@@ -226,23 +232,6 @@ const Reservation = () => {
         </div>
       </section>
 
-      <Dialog open={showSuccess} onOpenChange={(open) => { if (!open) handleSuccessClose(); }}>
-        <DialogContent className="max-w-md text-center">
-          <div className="flex flex-col items-center py-6">
-            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-              <CheckCircle2 className="h-12 w-12 text-green-600" />
-            </div>
-            <h2 className="font-serif text-2xl font-bold text-foreground mb-3">
-              {t.order_confirmed}
-            </h2>
-            <p className="text-muted-foreground mb-6 leading-relaxed" dangerouslySetInnerHTML={{ __html: t.order_confirmed_msg }} />
-            <Button onClick={handleSuccessClose} size="lg" className="w-full gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              {t.order_back_shop}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

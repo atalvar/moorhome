@@ -1,7 +1,22 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, Instagram, Facebook } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import logoImg from "@/assets/logo.png";
+
+const SOCIAL_LINKS = [
+  {
+    key: "instagram",
+    href: import.meta.env.VITE_INSTAGRAM_URL || "https://instagram.com",
+    Icon: Instagram,
+    label: "Instagram",
+  },
+  {
+    key: "facebook",
+    href: import.meta.env.VITE_FACEBOOK_URL || "https://facebook.com",
+    Icon: Facebook,
+    label: "Facebook",
+  },
+];
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -26,6 +41,20 @@ const Footer = () => {
             <p className="text-sm text-primary-foreground/70 leading-relaxed max-w-xs">
               {t.footer_tagline}
             </p>
+            <div className="flex items-center gap-3 mt-5">
+              {SOCIAL_LINKS.map((social) => (
+                <a
+                  key={social.key}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground/80 hover:text-primary-foreground hover:border-primary-foreground/50 hover:bg-white/10 transition-colors duration-300"
+                >
+                  <social.Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
           </div>
 
           <div>

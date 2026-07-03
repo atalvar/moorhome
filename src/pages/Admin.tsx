@@ -28,6 +28,14 @@ interface ProductForm {
   images: ImageItem[];
 }
 
+interface ProductFormErrors {
+  name?: boolean;
+  category?: boolean;
+  description?: boolean;
+  price?: boolean;
+  images?: boolean;
+}
+
 const emptyForm: ProductForm = { name: '', category: '', description: '', price: '', sale_price: '', images: [] };
 
 const Admin = () => {
@@ -68,6 +76,7 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<ProductFormErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
 
   const invalidateAdminQueries = () => {
@@ -150,10 +159,21 @@ const Admin = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.images.length === 0) {
-      toast.error(t.admin_add_image);
+    const nextErrors: ProductFormErrors = {
+      name: !form.name.trim(),
+      category: !form.category.trim(),
+      description: !form.description.trim(),
+      price: !form.price.trim(),
+      images: form.images.length === 0,
+    };
+
+    if (Object.values(nextErrors).some(Boolean)) {
+      setFieldErrors(nextErrors);
+      toast.error('Palun täida kõik kohustuslikud väljad');
       return;
     }
+
+    setFieldErrors({});
     setSaving(true);
 
     const productData: any = {
@@ -189,6 +209,7 @@ const Admin = () => {
     toast.success(editingId ? t.admin_updated : t.admin_added);
     setSaving(false);
     setForm(emptyForm);
+    setFieldErrors({});
     setEditingId(null);
     setShowForm(false);
     invalidateAdminQueries();
@@ -210,6 +231,7 @@ const Admin = () => {
       sale_price: product.sale_price ? String(product.sale_price) : '',
       images,
     });
+    setFieldErrors({});
     setEditingId(product.id);
     setShowForm(true);
   };
@@ -329,10 +351,10 @@ const Admin = () => {
     }
   };
 
-  const CategorySelect = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+  const CategorySelect = ({ value, onChange, hasError }: { value: string; onChange: (v: string) => void; hasError?: boolean }) => (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger>
-        <SelectValue placeholder={t.admin_category} />
+      <SelectTrigger className={hasError ? 'border-destructive focus:ring-destructive' : ''}>
+        <SelectValue placeholder="Vali kategooria" />
       </SelectTrigger>
       <SelectContent>
         {PRODUCT_CATEGORIES.map((cat) => (
@@ -377,33 +399,61 @@ const Admin = () => {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <Label>{t.admin_name}</Label>
-                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-                  </div>
-                  <div>
-                    <Label>{t.admin_category}</Label>
-                    <CategorySelect value={form.category} onChange={(v) => setForm({ ...form, category: v })} />
-                  </div>
-                  <div>
-                    <Label>{t.admin_price}</Label>
-                    <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
-                  </div>
-                  <div>
-                    <Label>{t.admin_sale_price}</Label>
-                    <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder={t.admin_sale_placeholder} />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label>{t.admin_images}</Label>
-                    <AdminImageManager
-                      images={form.images}
-                      onChange={(images) => setForm({ ...form, images })}
+                    <Label>{t.admin_name} <span className="text-destructive">*</span></Label>
+                    <Input
+                      value={form.name}
+                      onChange={(e) => { setForm({ ...form, name: e.target.value }); if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: false })); }}
+                      placeholder={t.contact_your_name}
+                      className={fieldErrors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
                     />
                   </div>
+                  <div>
+                    <Label>{t.admin_category} <span className="text-destructive">*</span></Label>
+                    <CategorySelect value={form.category} onChange={(v) => { setForm({ ...form, category: v, sale_price: v === 'Soodus -%' ? form.sale_price : '' }); if (fieldErrors.category) setFieldErrors((prev) => ({ ...prev, category: false })); }} hasError={fieldErrors.category} />
+                  </div>
+                  <div>
+                    <Label>{t.admin_price} <span className="text-destructive">*</span></Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={form.price}
+                      onChange={(e) => { setForm({ ...form, price: e.target.value }); if (fieldErrors.price) setFieldErrors((prev) => ({ ...prev, price: false })); }}
+                      placeholder="0.00"
+                      className={fieldErrors.price ? 'border-destructive focus-visible:ring-destructive' : ''}
+                    />
+                  </div>
+                  {form.category === 'Soodus -%' && (
+                    <div>
+                      <Label>{t.admin_sale_price}</Label>
+                      <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder={t.admin_sale_placeholder || '0.00'} />
+                    </div>
+                  )}
                   <div className="sm:col-span-2">
-                    <Label>{t.admin_description}</Label>
-                    <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={3} />
+                    <Label>{t.admin_images} <span className="text-destructive">*</span></Label>
+                    <div className={`rounded-md ${fieldErrors.images ? 'border border-destructive p-2' : ''}`}>
+                      <AdminImageManager
+                        images={form.images}
+                        onChange={(images) => {
+                          setForm({ ...form, images });
+                          if (fieldErrors.images && images.length > 0) setFieldErrors((prev) => ({ ...prev, images: false }));
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Label>{t.admin_description} <span className="text-destructive">*</span></Label>
+                    <Textarea
+                      value={form.description}
+                      onChange={(e) => { setForm({ ...form, description: e.target.value }); if (fieldErrors.description) setFieldErrors((prev) => ({ ...prev, description: false })); }}
+                      placeholder="Lisa kirjeldus"
+                      className={fieldErrors.description ? 'border-destructive focus-visible:ring-destructive' : ''}
+                      rows={3}
+                    />
                   </div>
                 </div>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  <span className="text-destructive">*</span> kohustuslik väli
+                </p>
                 <div className="flex gap-2 mt-4">
                   <Button type="submit" disabled={saving}>
                     {saving ? t.admin_saving : t.admin_save}
@@ -489,30 +539,55 @@ const Admin = () => {
                           <div className="grid sm:grid-cols-2 gap-4">
                             <div>
                               <Label>{t.admin_name}</Label>
-                              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                              <Input
+                                value={form.name}
+                                onChange={(e) => { setForm({ ...form, name: e.target.value }); if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: false })); }}
+                                placeholder={t.contact_your_name}
+                                className={fieldErrors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
+                              />
                             </div>
                             <div>
                               <Label>{t.admin_category}</Label>
-                              <CategorySelect value={form.category} onChange={(v) => setForm({ ...form, category: v })} />
+                              <CategorySelect value={form.category} onChange={(v) => { setForm({ ...form, category: v, sale_price: v === 'Soodus -%' ? form.sale_price : '' }); if (fieldErrors.category) setFieldErrors((prev) => ({ ...prev, category: false })); }} hasError={fieldErrors.category} />
                             </div>
                             <div>
                               <Label>{t.admin_price}</Label>
-                              <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={form.price}
+                                onChange={(e) => { setForm({ ...form, price: e.target.value }); if (fieldErrors.price) setFieldErrors((prev) => ({ ...prev, price: false })); }}
+                                placeholder="0.00"
+                                className={fieldErrors.price ? 'border-destructive focus-visible:ring-destructive' : ''}
+                              />
                             </div>
-                            <div>
-                              <Label>{t.admin_sale_price}</Label>
-                              <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder={t.admin_sale_placeholder} />
-                            </div>
+                            {form.category === 'Soodus -%' && (
+                              <div>
+                                <Label>{t.admin_sale_price}</Label>
+                                <Input type="number" step="0.01" value={form.sale_price} onChange={(e) => setForm({ ...form, sale_price: e.target.value })} placeholder={t.admin_sale_placeholder || '0.00'} />
+                              </div>
+                            )}
                             <div className="sm:col-span-2">
                               <Label>{t.admin_images}</Label>
-                              <AdminImageManager
-                                images={form.images}
-                                onChange={(images) => setForm({ ...form, images })}
-                              />
+                              <div className={`rounded-md ${fieldErrors.images ? 'border border-destructive p-2' : ''}`}>
+                                <AdminImageManager
+                                  images={form.images}
+                                  onChange={(images) => {
+                                    setForm({ ...form, images });
+                                    if (fieldErrors.images && images.length > 0) setFieldErrors((prev) => ({ ...prev, images: false }));
+                                  }}
+                                />
+                              </div>
                             </div>
                             <div className="sm:col-span-2">
                               <Label>{t.admin_description}</Label>
-                              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={3} />
+                              <Textarea
+                                value={form.description}
+                                onChange={(e) => { setForm({ ...form, description: e.target.value }); if (fieldErrors.description) setFieldErrors((prev) => ({ ...prev, description: false })); }}
+                                placeholder="Lisa kirjeldus"
+                                className={fieldErrors.description ? 'border-destructive focus-visible:ring-destructive' : ''}
+                                rows={3}
+                              />
                             </div>
                           </div>
                           <div className="flex gap-2 mt-4">

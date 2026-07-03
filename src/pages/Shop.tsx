@@ -81,7 +81,7 @@ const Shop = () => {
               {filteredProducts.map((product, index) => (
                 <div
                   key={product.id}
-                  className="animate-fade-in"
+                  className="animate-fade-in h-[33rem] min-h-[33rem] max-h-[33rem]"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
                   <ProductCard product={product} />
